@@ -1,0 +1,224 @@
+<div
+  class="c-principal d-flex justify-content-center align-items-center min-vh-100"
+>
+  <div class="cardRegistro p-4 shadow-lg rounded">
+    <h3 class="formTitle text-center mb-4">Registro de Usuario</h3>
+
+    <!-- Botones para elegir tipo de usuario (Paciente o Especialista) -->
+    <div class="text-center mb-4">
+      <button
+        class="btn btn-outline-primary mx-2"
+        [ngClass]="{ 'btn-active': userType === 'paciente' }"
+        (click)="setUserType('paciente')"
+      >
+        Paciente
+      </button>
+      <button
+        class="btn btn-outline-success mx-2"
+        [ngClass]="{ 'btn-active': userType === 'especialista' }"
+        (click)="setUserType('especialista')"
+      >
+        Especialista
+      </button>
+    </div>
+
+    <!-- Formulario de Registro -->
+    <form action="#" method="POST" enctype="multipart/form-data">
+      <!-- Nombre -->
+      <div class="mb-3">
+        <label for="nombre" class="form-label">Nombre</label>
+        <input
+          type="text"
+          class="form-control"
+          id="nombre"
+          name="nombre"
+          [(ngModel)]="nombre"
+          required
+        />
+      </div>
+
+      <!-- Apellido -->
+      <div class="mb-3">
+        <label for="apellido" class="form-label">Apellido</label>
+        <input
+          type="text"
+          class="form-control"
+          id="apellido"
+          name="apellido"
+          required
+          [(ngModel)]="apellido"
+        />
+      </div>
+
+      <!-- Edad -->
+      <div class="mb-3">
+        <label for="edad" class="form-label">Edad</label>
+        <input
+          type="number"
+          class="form-control"
+          id="edad"
+          name="edad"
+          required
+          [(ngModel)]="edad"
+        />
+      </div>
+
+      <!-- DNI -->
+      <div class="mb-3">
+        <label for="dni" class="form-label">DNI</label>
+        <input
+          type="text"
+          class="form-control"
+          id="dni"
+          name="dni"
+          required
+          pattern="^\d{7,8}$"
+          placeholder="Ejemplo: 12345678"
+          [(ngModel)]="dni"
+        />
+      </div>
+
+      <!-- Condicional para mostrar campos específicos del tipo de usuario -->
+      <div *ngIf="userType === 'paciente'">
+        <div class="mb-3">
+          <label for="obraSocial" class="form-label">Obra Social</label>
+          <input
+            type="text"
+            class="form-control"
+            id="obraSocial"
+            name="obraSocial"
+            [(ngModel)]="obraSocial"
+            required
+          />
+        </div>
+
+        <!-- Imágenes para perfil -->
+        <div class="mb-3">
+          <label for="imagenPerfil1" class="form-label"
+            >Imagen 1 para Perfil</label
+          >
+          <input
+            type="file"
+            class="form-control"
+            id="imagenPerfil"
+            name="imagenPerfil"
+            accept="image/*"
+            required
+            (change)="onFileChange($event, 'imagenPerfil')"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="imagenPerfil2" class="form-label"
+            >Imagen 2 para Perfil</label
+          >
+          <input
+            type="file"
+            class="form-control"
+            id="imagenPerfil2"
+            name="imagenPerfil2"
+            accept="image/*"
+            required
+            (change)="onFileChange($event, 'imagenPerfil2')"
+          />
+        </div>
+      </div>
+
+      <div *ngIf="userType === 'especialista'">
+        <!-- Especialidad para especialistas -->
+        <div class="mb-3">
+          <mat-form-field>
+            <mat-label>Especialidad</mat-label>
+            <mat-select
+              [(ngModel)]="especialidadSeleccionadas"
+              name="especialidadSeleccionadas"
+              multiple
+            >
+              <mat-option
+                *ngFor="let especialidad of especialidades"
+                [value]="especialidad"
+              >
+                {{ especialidad }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="otraCheckbox"
+          [(ngModel)]="otraSeleccionada"
+          name="otraSeleccionada"
+        />
+        <label class="form-check-label" for="otraCheckbox"> Otra </label>
+
+        <div class="mb-3" *ngIf="otraSeleccionada">
+          <label for="nuevaEspecialidad" class="form-label"
+            >Especificar Especialidad</label
+          >
+          <input
+            type="text"
+            class="form-control"
+            id="nuevaEspecialidad"
+            name="nuevaEspecialidad"
+            [(ngModel)]="nuevaEspecialidad"
+          />
+          <button class="btn btn-chip" (click)="agregarEspecialidad()">
+            <i class="bi bi-plus"></i> Agregar Especialidad
+          </button>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="mb-3">
+        <label for="email" class="form-label">Correo Electrónico</label>
+        <input
+          type="email"
+          class="form-control"
+          id="email"
+          name="email"
+          [(ngModel)]="email"
+          required
+        />
+      </div>
+
+      <!-- Contraseña -->
+      <div class="mb-3">
+        <label for="contraseña" class="form-label">Contraseña</label>
+        <input
+          type="password"
+          class="form-control"
+          id="contraseña"
+          name="contraseña"
+          required
+          minlength="6"
+          [(ngModel)]="password"
+        />
+      </div>
+
+      <!-- Imagen de perfil -->
+      <div class="mb-3" *ngIf="userType === 'especialista'">
+        <label for="imagenPerfil" class="form-label">Imagen de Perfil</label>
+        <input
+          type="file"
+          class="form-control"
+          id="imagenPerfil"
+          name="imagenPerfil"
+          accept="image/*"
+          required
+          (change)="onFileChange($event, 'imagenPerfil1')"
+        />
+      </div>
+
+      <div class="mb-3">
+        <button
+          type="submit"
+          class="btn btn-primary w-100"
+          (click)="agregarUsuario()"
+        >
+          Registrar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

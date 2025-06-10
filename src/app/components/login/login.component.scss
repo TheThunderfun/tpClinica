@@ -1,0 +1,30 @@
+
+  
+    .gradient-form {
+    height: 100vh !important;
+    }
+
+    .bg-image {
+        background-image: url('../../../assets/images/bienvenida.png'); /* Cambia la ruta a tu imagen */
+        background-size: cover; /* Asegura que la imagen cubra todo el contenedor */
+        background-position: center; /* Centra la imagen */
+        background-repeat: no-repeat; /* Evita que la imagen se repita */
+        //height: 100vh; /* O la altura que necesites */
+    }
+
+    .bg-image::before {
+        content: ""; /* Necesario para crear el pseudo-elemento */
+        position: absolute; /* Posiciona la capa sobre el contenido */
+        top: 0;
+        left: 50;
+        width: 50%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5); /* Aquí defines el color y la opacidad */
+        z-index: 1; /* Asegura que el fondo esté detrás del texto */
+    }
+    
+    /* Aseguramos que el texto quede encima del fondo semi-transparente */
+    .bg-image .text-white {
+        position: relative;
+        z-index: 2; /* Asegura que el texto esté encima de la capa semi-transparente */
+    }

@@ -1,0 +1,16 @@
+button {
+    border: 2px solid #ccc;
+    transition: all 0.3s ease;
+  }
+  
+  /* Estilo cuando el botón está activo */
+  .btn-active {
+    background-color: #007bff; /* Color de fondo cuando está seleccionado */
+    color: white; /* Color del texto cuando está seleccionado */
+    border-color: #007bff; /* Borde del botón activo */
+  }
+  
+  /* Estilo cuando el botón no está activo */
+  button:not(.btn-active):hover {
+    background-color: #f8f9fa; /* Fondo cuando no está seleccionado */
+  }
