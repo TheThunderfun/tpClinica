@@ -145,7 +145,7 @@ export class UsuariosService {
             u.autorizado
           );
 
-        case 'admin':
+        case 'administrador':
           return new Admin(
             u.id,
             u.nombre,

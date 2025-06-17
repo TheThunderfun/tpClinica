@@ -2,7 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormControl,
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { EspecialidadesService } from '../../services/especialidades.service';
 import { UsuariosService } from '../../services/usuarios.service';
 import { AuthService } from '../../services/auth.service';
@@ -10,6 +17,9 @@ import { Especialista } from '../../class/especialista';
 import { Paciente } from '../../class/paciente';
 import { Subscription } from 'rxjs';
 import { Usuario } from '../../class/usuario';
+import { trigger, transition, style, animate } from '@angular/animations';
+import { CaptchaComponent } from '../captcha/captcha.component';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-registro',
@@ -20,6 +30,15 @@ import { Usuario } from '../../class/usuario';
     MatSelectModule,
     FormsModule,
     ReactiveFormsModule,
+    CaptchaComponent,
+  ],
+  animations: [
+    trigger('fadeIn', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.95)' }),
+        animate('300ms ease-out', style({ opacity: 1, transform: 'scale(1)' })),
+      ]),
+    ]),
   ],
   templateUrl: './registro.component.html',
   styleUrl: './registro.component.scss',
@@ -27,7 +46,6 @@ import { Usuario } from '../../class/usuario';
 export class RegistroComponent implements OnInit {
   especialidades: string[] = [];
   nuevaEspecialidad: string = '';
-  userType: string = 'paciente';
   speciality: string = '';
   archivos: { [key: string]: File } = {};
   private subs: Subscription = new Subscription();
@@ -41,16 +59,39 @@ export class RegistroComponent implements OnInit {
   especialidadSeleccionadas: string[] = [];
   otraSeleccionada: boolean = false;
   otraEspecialidad: string = '';
+  userType: string | null = null;
+
+  formulario!: FormGroup;
 
   constructor(
     private svEspcecialidades: EspecialidadesService,
     private svUsuarios: UsuariosService,
-    private svAuth: AuthService
+    private svAuth: AuthService,
+    private fb: FormBuilder,
+    private toastr: ToastrService
   ) {}
 
   ngOnInit(): void {
     this.subs = this.svEspcecialidades.especialidades$.subscribe((data) => {
       this.especialidades = data.map((e) => e.nombre);
+    });
+
+    this.formulario = this.fb.group({
+      nombre: ['', Validators.required],
+      apellido: ['', Validators.required],
+      edad: [
+        null,
+        [Validators.required, Validators.min(18), Validators.max(99)],
+      ],
+      dni: [null, [Validators.required, Validators.pattern(/^\d{7,8}$/)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      obraSocial: ['', Validators.required],
+      especialidadSeleccionadas: [[]],
+      otraEspecialidad: [''],
+      otraSeleccionada: [false],
+      imagenPerfil: [null],
+      imagenPerfil2: [null],
     });
   }
 
@@ -72,9 +113,21 @@ export class RegistroComponent implements OnInit {
     }
   }
 
-  setUserType(type: string) {
-    this.userType = type;
-    this.speciality = '';
+  setUserType(tipo: 'paciente' | 'especialista') {
+    this.userType = tipo;
+
+    if (tipo === 'paciente') {
+      this.formulario.get('obraSocial')?.setValidators(Validators.required);
+      this.formulario.get('especialidadSeleccionadas')?.clearValidators();
+    } else if (tipo === 'especialista') {
+      this.formulario.get('obraSocial')?.clearValidators();
+      this.formulario
+        .get('especialidadSeleccionadas')
+        ?.setValidators([Validators.required, Validators.minLength(1)]);
+    }
+
+    this.formulario.get('obraSocial')?.updateValueAndValidity();
+    this.formulario.get('especialidadSeleccionadas')?.updateValueAndValidity();
   }
 
   setSpeciality(event: any) {
@@ -91,7 +144,7 @@ export class RegistroComponent implements OnInit {
     try {
       // Validar que userType esté definido
       if (!this.userType) {
-        alert('Debe seleccionar un tipo de usuario');
+        this.toastr.error('Debe seleccionar un tipo de usuario');
         return;
       }
 
@@ -104,7 +157,7 @@ export class RegistroComponent implements OnInit {
         !this.edad ||
         !this.password
       ) {
-        alert('Por favor complete todos los campos obligatorios');
+        this.toastr.error('Por favor complete todos los campos obligatorios');
         return;
       }
 
@@ -115,11 +168,11 @@ export class RegistroComponent implements OnInit {
       if (this.userType === 'paciente') {
         // Validar campos de paciente
         if (!this.obraSocial) {
-          alert('Por favor ingrese la obra social');
+          this.toastr.error('Por favor ingrese la obra social');
           return;
         }
         if (!this.archivos['imagenPerfil'] || !this.archivos['imagenPerfil2']) {
-          alert('Debe seleccionar ambas imágenes para el perfil');
+          this.toastr.error('Debe seleccionar ambas imágenes para el perfil');
           return;
         }
 
@@ -142,13 +195,13 @@ export class RegistroComponent implements OnInit {
       } else if (this.userType === 'especialista') {
         // Validar especialidad
 
-        console.log(this.especialidadSeleccionadas)
+        console.log(this.especialidadSeleccionadas);
         if (
           (!this.especialidadSeleccionadas ||
             this.especialidadSeleccionadas.length === 0) &&
           !this.otraEspecialidad
         ) {
-          alert('Debe seleccionar o agregar una especialidad');
+          this.toastr.error('Debe seleccionar o agregar una especialidad');
           return;
         }
 
@@ -159,7 +212,9 @@ export class RegistroComponent implements OnInit {
         }
 
         if (!this.archivos['imagenPerfil1']) {
-          alert('Debe seleccionar una imagen de perfil para especialista');
+          this.toastr.error(
+            'Debe seleccionar una imagen de perfil para especialista'
+          );
           return;
         }
 
@@ -173,12 +228,12 @@ export class RegistroComponent implements OnInit {
           '', // imagenPerfil URL será guardado en backend luego de subir la imagen
           especialidadesFinales,
           [], // jornada (puede agregar si corresponde)
-          true // autorizado
+          false // autorizado
         );
 
         imagenes = [this.archivos['imagenPerfil1']];
       } else {
-        alert('Tipo de usuario inválido');
+        this.toastr.error('Tipo de usuario inválido');
         return;
       }
 
@@ -192,7 +247,7 @@ export class RegistroComponent implements OnInit {
         imagenes.filter((f) => f)
       );
 
-      alert('Usuario registrado con éxito');
+      this.toastr.error('Usuario registrado con éxito');
 
       // Limpiar formulario (opcional)
       this.nombre = '';
@@ -208,7 +263,9 @@ export class RegistroComponent implements OnInit {
       this.archivos = {};
     } catch (error) {
       console.error('Error registrando usuario:', error);
-      alert('Ocurrió un error al registrar el usuario.');
+      this.toastr.error('Ocurrió un error al registrar el usuario.');
     }
   }
+
+  captchaValido = false;
 }

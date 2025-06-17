@@ -1,27 +1,89 @@
 # TpClinica
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.9.
+Pagina Web:https://tpclinica-1845c.web.app
 
-## Development server
+# Pantalla de Login
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Descripción
 
-## Code scaffolding
+Permite al usuario ingresar con email y contraseña para acceder a la aplicación.
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Componentes y Elementos
 
-## Build
+- Formulario con campos: email y contraseña.
+- Botón de ingreso.
+- Mensajes de error si las credenciales son inválidas.
+- 6 botones de acceso rápido:
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+2 especialistas
 
-## Running unit tests
+1 administrador
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+3 pacientes
 
-## Running end-to-end tests
+# Pantalla de Registro de Usuario
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+## Descripción
 
-## Further help
+Pantalla donde el usuario puede registrarse como Paciente o Especialista, completando datos personales y específicos según el tipo.
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## Componentes y Elementos
+
+- Selector de tipo de usuario (Paciente o Especialista).
+- Formulario reactivo con campos: nombre, apellido, edad, DNI, email, contraseña.
+- Campos específicos para paciente: obra social, dos imágenes de perfil.
+- Campos específicos para especialista: especialidades (multi-select), checkbox para agregar otra, imagen de perfil.
+- Componente Captcha para validación humana.
+- Botón "Registrar" que solo se habilita si el formulario es válido y el captcha fue resuelto correctamente.
+
+## Funcionalidades
+
+- Validaciones en cada campo (obligatorio, formato, números mayores a 0, etc).
+- Validación dinámica de campos según el tipo de usuario seleccionado.
+- Permite cargar imágenes para el perfil.
+- Integración con componente captcha para evitar registros automatizados.
+
+## Integraciones y Eventos
+
+- Envío del formulario a función `agregarUsuario()` que procesa los datos.
+- Uso de Reactive Forms para control de validación.
+- Comunicación con componente `<app-captcha>` para validar respuesta humana.
+
+# Pantalla de Bienvenida
+
+## Descripción
+
+Pantalla inicial que recibe al usuario y presenta la app. Sirve como punto de partida para navegar a login o registro.
+
+## Componentes y Elementos
+
+- Mensaje de bienvenida.
+- Botones o enlaces para ir a Login o Registro.
+
+## Funcionalidades
+
+- Redirecciona al usuario según la acción seleccionada (login o registro).
+- Puede incluir animaciones o mensajes dinámicos.
+
+## Integraciones y Eventos
+
+- Navegación a rutas internas (login, registro).
+
+# Pantalla de Usuarios (Administración)
+
+## Descripción
+
+Pantalla exclusiva para el administrador donde puede gestionar usuarios, incluyendo registrar nuevos administradores y validar acceso de otros usuarios.
+
+## Componentes y Elementos
+
+- Tabla/lista de usuarios registrados con detalles básicos.
+- Formulario para registrar nuevos administradores.
+- Botones para validar, activar o desactivar usuarios.
+- Filtros o búsqueda para facilitar la gestión.
+
+## Funcionalidades
+
+- Registro de nuevos administradores con validaciones.
+- Validación manual o automática de usuarios existentes.
+- Visualización de estado y roles de usuarios.

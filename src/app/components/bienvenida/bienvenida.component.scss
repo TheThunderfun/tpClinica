@@ -1,0 +1,23 @@
+body {
+  background-color: #f4f6f9;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+h1 {
+  color: #004080;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-outline-secondary {
+  border-color: #007bff;
+  color: #007bff;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #007bff;
+  color: #fff;
+}

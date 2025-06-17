@@ -14,3 +14,42 @@ button {
   button:not(.btn-active):hover {
     background-color: #f8f9fa; /* Fondo cuando no está seleccionado */
   }
+
+
+.selector-tipo-usuario {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.btn-user-type {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 220px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #ccc;
+  background-color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-user-type:hover {
+  background-color: #f0f8ff;
+  border-color: #007bff;
+}
+
+.btn-user-type img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+.btn-user-type span {
+  font-weight: 600;
+  color: #333;
+}

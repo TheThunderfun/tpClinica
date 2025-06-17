@@ -1,6 +1,7 @@
-<app-nav-bar />
-
-<section class="h-100 gradient-form" style="background-color: #eeeeee">
+<section
+  class="h-100 gradient-form position-relative"
+  style="background-color: #eeeeee; height: 100vh"
+>
   <div class="container h-100">
     <div class="row d-flex justify-content-center align-items-center h-100">
       <div class="col-xl-10">
@@ -10,25 +11,6 @@
               <div class="card-body mx-md-4">
                 <div class="text-center">
                   <h4 class="mt-1 mb-5 pb-1">Clinica Curita</h4>
-                </div>
-
-                <!-- Botones de acceso rápido -->
-                <div
-                  class="d-flex justify-content-center mb-4"
-                  style="gap: 1rem"
-                >
-                  <button class="btn btn-outline-primary" (click)="paciente()">
-                    Paciente
-                  </button>
-                  <button
-                    class="btn btn-outline-success"
-                    (click)="especialista()"
-                  >
-                    Especialista
-                  </button>
-                  <button class="btn btn-outline-warning" (click)="admin()">
-                    Administrador
-                  </button>
                 </div>
 
                 <form>
@@ -61,12 +43,10 @@
                   <div class="text-center pt-1 mb-5 pb-1">
                     <button
                       (click)="login()"
-                      data-mdb-button-init
-                      data-mdb-ripple-init
                       class="btn btn-primary mb-3"
                       type="button"
                     >
-                      Iniciar sesion
+                      Iniciar sesión
                     </button>
                   </div>
 
@@ -76,12 +56,10 @@
                     <p class="mb-0 me-2">¿No tienes una cuenta?</p>
                     <button
                       type="button"
-                      data-mdb-button-init
-                      data-mdb-ripple-init
                       class="btn btn-outline-danger"
                       (click)="goToRegistro()"
                     >
-                      Registrese
+                      Regístrate
                     </button>
                   </div>
                 </form>
@@ -89,7 +67,7 @@
             </div>
             <div class="col-lg-6 d-flex align-items-center bg-image">
               <div class="text-white px-3 py-4 p-md-5 mx-md-4">
-                <h4 class="mb-4">Somos mas que una clinica</h4>
+                <h4 class="mb-4">Somos más que una clínica</h4>
                 <p class="small mb-0">
                   Somos tu aliado en el cuidado de la salud. Explora nuestros
                   servicios y descubre cómo podemos ayudarte. ¡Gracias por
@@ -100,6 +78,24 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- FAB: Botón flotante de acceso rápido -->
+  <div class="fab-container">
+    <button class="fab-main" (click)="toggleFavs()">
+      <img src="assets/users/acceso.png" alt="acceso" />
+    </button>
+
+    <div class="fab-options" [class.show]="showFavs">
+      <button
+        *ngFor="let u of usuariosRapidos"
+        class="fab-option"
+        (click)="loginRapido(u)"
+      >
+        <img [src]="u.imagen" [alt]="u.nombre" />
+        <span>{{ u.nombre }}</span>
+      </button>
     </div>
   </div>
 </section>

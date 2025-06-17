@@ -1,0 +1,311 @@
+<div class="container my-5">
+  <button
+    class="btn btn-success mb-4"
+    data-bs-toggle="modal"
+    data-bs-target="#registroAdminModal"
+  >
+    <i class="bi bi-person-plus me-1"></i> Registrar Administrador
+  </button>
+  <h2
+    class="mb-4 text-primary fw-semibold"
+    style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+  >
+    Sección Usuarios
+  </h2>
+
+  <table
+    class="table table-hover align-middle"
+    style="
+      border: 1px solid #d1d7dc;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      background-color: #fff;
+    "
+  >
+    <thead style="background-color: #f5f8fa; border-bottom: 2px solid #007bff">
+      <tr>
+        <th
+          scope="col"
+          class="text-center text-secondary"
+          style="font-weight: 600"
+        >
+          Nombre
+        </th>
+        <th
+          scope="col"
+          class="text-center text-secondary"
+          style="font-weight: 600"
+        >
+          Apellido
+        </th>
+        <th
+          scope="col"
+          class="text-center text-secondary"
+          style="font-weight: 600"
+        >
+          Email
+        </th>
+        <th
+          scope="col"
+          class="text-center text-secondary"
+          style="font-weight: 600"
+        >
+          Rol
+        </th>
+        <th
+          scope="col"
+          class="text-center text-secondary"
+          style="font-weight: 600"
+        >
+          Autorizado
+        </th>
+        <th
+          scope="col"
+          class="text-center text-secondary"
+          style="font-weight: 600"
+        >
+          Acciones
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        *ngFor="let usuario of usuarios"
+        [class.bg-light]="usuario.rol === 'paciente'"
+      >
+        <td class="text-center text-dark" style="font-weight: 500">
+          {{ usuario.nombre }}
+        </td>
+        <td class="text-center text-dark" style="font-weight: 500">
+          {{ usuario.apellido }}
+        </td>
+        <td
+          class="text-center text-truncate"
+          style="
+            max-width: 220px;
+            font-family: 'Roboto Mono', monospace;
+            color: #555;
+          "
+        >
+          {{ usuario.email }}
+        </td>
+        <td class="text-center">
+          {{ usuario.rol | rolVisual }}
+        </td>
+        <td class="text-center">
+          <ng-container *ngIf="usuario.rol === 'especialista'; else noAplica">
+            <span [innerHTML]="usuario.autorizado | autorizacionVisual"></span>
+          </ng-container>
+          <ng-template #noAplica>--</ng-template>
+        </td>
+        <td class="text-center">
+          <button
+            *ngIf="usuario.rol === 'especialista'"
+            (click)="cambiarAutorizacion(usuario)"
+            [ngClass]="{
+              'btn btn-outline-success btn-sm': !usuario.autorizado,
+              'btn btn-outline-danger btn-sm': usuario.autorizado
+            }"
+            title="{{ usuario.autorizado ? 'Deshabilitar' : 'Habilitar' }}"
+            style="min-width: 110px; font-weight: 600"
+          >
+            <i
+              class="bi"
+              [ngClass]="{
+                'bi-toggle-on': usuario.autorizado,
+                'bi-toggle-off': !usuario.autorizado
+              }"
+              style="font-size: 1.25rem; margin-right: 6px"
+            ></i>
+            {{ usuario.autorizado | autorizacionTexto }}
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div
+    class="modal fade"
+    id="registroAdminModal"
+    tabindex="-1"
+    aria-labelledby="registroAdminModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form [formGroup]="formAdmin" (ngSubmit)="registrarAdministrador()">
+          <div class="modal-header">
+            <h5 class="modal-title" id="registroAdminModalLabel">
+              Registrar Administrador
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="row g-3">
+              <!-- Nombre -->
+              <div class="col-md-6">
+                <label>Nombre</label>
+                <input formControlName="nombre" class="form-control" />
+                <div
+                  class="text-danger small"
+                  *ngIf="
+                    formAdmin.get('nombre')?.touched &&
+                    formAdmin.get('nombre')?.invalid
+                  "
+                >
+                  <div *ngIf="formAdmin.get('nombre')?.errors?.['required']">
+                    El nombre es obligatorio.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Apellido -->
+              <div class="col-md-6">
+                <label>Apellido</label>
+                <input formControlName="apellido" class="form-control" />
+                <div
+                  class="text-danger small"
+                  *ngIf="
+                    formAdmin.get('apellido')?.touched &&
+                    formAdmin.get('apellido')?.invalid
+                  "
+                >
+                  <div *ngIf="formAdmin.get('apellido')?.errors?.['required']">
+                    El apellido es obligatorio.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Edad -->
+              <div class="col-md-4">
+                <label>Edad</label>
+                <input
+                  type="number"
+                  formControlName="edad"
+                  class="form-control"
+                />
+                <div
+                  class="text-danger small"
+                  *ngIf="
+                    formAdmin.get('edad')?.touched &&
+                    formAdmin.get('edad')?.invalid
+                  "
+                >
+                  <div *ngIf="formAdmin.get('edad')?.errors?.['required']">
+                    La edad es obligatoria.
+                  </div>
+                  <div *ngIf="formAdmin.get('edad')?.errors?.['min']">
+                    La edad mínima es 18.
+                  </div>
+                  <div *ngIf="formAdmin.get('edad')?.errors?.['max']">
+                    La edad máxima es 99.
+                  </div>
+                </div>
+              </div>
+
+              <!-- DNI -->
+              <div class="col-md-4">
+                <label>DNI</label>
+                <input type="text" formControlName="dni" class="form-control" />
+                <div
+                  class="text-danger small"
+                  *ngIf="
+                    formAdmin.get('dni')?.touched &&
+                    formAdmin.get('dni')?.invalid
+                  "
+                >
+                  <div *ngIf="formAdmin.get('dni')?.errors?.['required']">
+                    El DNI es obligatorio.
+                  </div>
+                  <div *ngIf="formAdmin.get('dni')?.errors?.['minlength']">
+                    El DNI debe tener al menos 8 caracteres.
+                  </div>
+                  <div *ngIf="formAdmin.get('dni')?.errors?.['maxlength']">
+                    El DNI no puede tener más de 8 caracteres.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="col-md-4">
+                <label>Email</label>
+                <input
+                  type="email"
+                  formControlName="email"
+                  class="form-control"
+                />
+                <div
+                  class="text-danger small"
+                  *ngIf="
+                    formAdmin.get('email')?.touched &&
+                    formAdmin.get('email')?.invalid
+                  "
+                >
+                  <div *ngIf="formAdmin.get('email')?.errors?.['required']">
+                    El email es obligatorio.
+                  </div>
+                  <div *ngIf="formAdmin.get('email')?.errors?.['email']">
+                    Debe ser un email válido.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Contraseña -->
+              <div class="col-md-6">
+                <label>Contraseña</label>
+                <input
+                  type="password"
+                  formControlName="password"
+                  class="form-control"
+                />
+                <div
+                  class="text-danger small"
+                  *ngIf="
+                    formAdmin.get('password')?.touched &&
+                    formAdmin.get('password')?.invalid
+                  "
+                >
+                  <div *ngIf="formAdmin.get('password')?.errors?.['required']">
+                    La contraseña es obligatoria.
+                  </div>
+                  <div *ngIf="formAdmin.get('password')?.errors?.['minlength']">
+                    Debe tener al menos
+                    {{ formAdmin.get('password')?.errors?.['minlength']?.requiredLength }}
+                    caracteres.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Imagen -->
+              <div class="col-md-6">
+                <label>Imagen de perfil</label>
+                <input
+                  type="file"
+                  (change)="onFileSelected($event)"
+                  class="form-control"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button
+              class="btn btn-primary"
+              type="submit"
+              [disabled]="formAdmin.invalid"
+            >
+              Registrar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

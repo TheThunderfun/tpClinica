@@ -1,0 +1,16 @@
+<div class="captcha-container">
+  <label class="captcha-label">Resuelve la siguiente operación:</label>
+  <p class="captcha-text"><strong>{{ captchaText }}</strong></p>
+  <input
+    [(ngModel)]="captchaRespuesta"
+    placeholder="Escribe la respuesta"
+    class="captcha-input"
+    type="number"
+  />
+  <button (click)="validarCaptcha()" class="captcha-button">
+    Validar
+  </button>
+  <p *ngIf="captchaError" class="captcha-error">
+    Respuesta incorrecta, intenta de nuevo.
+  </p>
+</div>

@@ -33,9 +33,33 @@
         <li class="nav-item">
           <a class="nav-link" href="#">Contacto</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/login">Login</a>
+        <li
+          class="nav-item"
+          *ngIf="(usuario$ | async)?.rol === 'administrador'"
+        >
+          <a class="nav-link" href="/usuarios">Usuarios</a>
         </li>
+        <!-- <li class="nav-item">
+          <a class="nav-link" href="/login">Login</a>
+        </li> -->
+        <ng-container *ngIf="usuario$ | async as usuario; else login">
+          <li class="nav-item">
+            <button
+              class="btn btn-outline-danger btn-sm ms-3"
+              (click)="logout()"
+            >
+              Cerrar sesión
+            </button>
+          </li>
+        </ng-container>
+
+        <ng-template #login>
+          <li class="nav-item">
+            <a class="btn btn-outline-primary btn-sm ms-3" href="/login">
+              Iniciar sesión
+            </a>
+          </li>
+        </ng-template>
       </ul>
     </div>
   </div>

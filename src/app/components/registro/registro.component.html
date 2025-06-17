@@ -1,29 +1,34 @@
 <div
   class="c-principal d-flex justify-content-center align-items-center min-vh-100"
 >
-  <div class="cardRegistro p-4 shadow-lg rounded">
+  <div class="cardRegistro p-4 shadow-lg rounded" [@fadeIn]>
     <h3 class="formTitle text-center mb-4">Registro de Usuario</h3>
 
-    <!-- Botones para elegir tipo de usuario (Paciente o Especialista) -->
-    <div class="text-center mb-4">
+    <!-- Botones para elegir tipo de usuario -->
+    <div class="selector-tipo-usuario text-center mb-4" *ngIf="!userType">
       <button
-        class="btn btn-outline-primary mx-2"
-        [ngClass]="{ 'btn-active': userType === 'paciente' }"
+        class="btn-user-type btn btn-outline-primary d-block w-100 mb-3"
         (click)="setUserType('paciente')"
       >
-        Paciente
+        <img src="assets/users/paciente.png" alt="Paciente" />
+        <span>Paciente</span>
       </button>
+
       <button
-        class="btn btn-outline-success mx-2"
-        [ngClass]="{ 'btn-active': userType === 'especialista' }"
+        class="btn-user-type btn btn-outline-primary d-block w-100"
         (click)="setUserType('especialista')"
       >
-        Especialista
+        <img src="assets/users/especialista.png" alt="Especialista" />
+        <span>Especialista</span>
       </button>
     </div>
 
     <!-- Formulario de Registro -->
-    <form action="#" method="POST" enctype="multipart/form-data">
+    <form
+      *ngIf="userType"
+      [formGroup]="formulario"
+      (ngSubmit)="agregarUsuario()"
+    >
       <!-- Nombre -->
       <div class="mb-3">
         <label for="nombre" class="form-label">Nombre</label>
@@ -31,10 +36,17 @@
           type="text"
           class="form-control"
           id="nombre"
-          name="nombre"
-          [(ngModel)]="nombre"
-          required
+          formControlName="nombre"
         />
+        <div
+          *ngIf="
+            formulario.get('nombre')?.invalid &&
+            formulario.get('nombre')?.touched
+          "
+          class="text-danger small"
+        >
+          El nombre es obligatorio.
+        </div>
       </div>
 
       <!-- Apellido -->
@@ -44,10 +56,17 @@
           type="text"
           class="form-control"
           id="apellido"
-          name="apellido"
-          required
-          [(ngModel)]="apellido"
+          formControlName="apellido"
         />
+        <div
+          *ngIf="
+            formulario.get('apellido')?.invalid &&
+            formulario.get('apellido')?.touched
+          "
+          class="text-danger small"
+        >
+          El apellido es obligatorio.
+        </div>
       </div>
 
       <!-- Edad -->
@@ -57,10 +76,16 @@
           type="number"
           class="form-control"
           id="edad"
-          name="edad"
-          required
-          [(ngModel)]="edad"
+          formControlName="edad"
         />
+        <div
+          *ngIf="
+            formulario.get('edad')?.invalid && formulario.get('edad')?.touched
+          "
+          class="text-danger small"
+        >
+          La edad es obligatoria y debe ser mayor a 0.
+        </div>
       </div>
 
       <!-- DNI -->
@@ -70,15 +95,20 @@
           type="text"
           class="form-control"
           id="dni"
-          name="dni"
-          required
-          pattern="^\d{7,8}$"
+          formControlName="dni"
           placeholder="Ejemplo: 12345678"
-          [(ngModel)]="dni"
         />
+        <div
+          *ngIf="
+            formulario.get('dni')?.invalid && formulario.get('dni')?.touched
+          "
+          class="text-danger small"
+        >
+          Ingrese un DNI válido (7 u 8 números).
+        </div>
       </div>
 
-      <!-- Condicional para mostrar campos específicos del tipo de usuario -->
+      <!-- Campos específicos para paciente -->
       <div *ngIf="userType === 'paciente'">
         <div class="mb-3">
           <label for="obraSocial" class="form-label">Obra Social</label>
@@ -86,25 +116,29 @@
             type="text"
             class="form-control"
             id="obraSocial"
-            name="obraSocial"
-            [(ngModel)]="obraSocial"
-            required
+            formControlName="obraSocial"
           />
+          <div
+            *ngIf="
+              formulario.get('obraSocial')?.invalid &&
+              formulario.get('obraSocial')?.touched
+            "
+            class="text-danger small"
+          >
+            La obra social es obligatoria.
+          </div>
         </div>
 
-        <!-- Imágenes para perfil -->
         <div class="mb-3">
-          <label for="imagenPerfil1" class="form-label"
+          <label for="imagenPerfil" class="form-label"
             >Imagen 1 para Perfil</label
           >
           <input
             type="file"
             class="form-control"
             id="imagenPerfil"
-            name="imagenPerfil"
-            accept="image/*"
-            required
             (change)="onFileChange($event, 'imagenPerfil')"
+            required
           />
         </div>
 
@@ -116,24 +150,18 @@
             type="file"
             class="form-control"
             id="imagenPerfil2"
-            name="imagenPerfil2"
-            accept="image/*"
-            required
             (change)="onFileChange($event, 'imagenPerfil2')"
+            required
           />
         </div>
       </div>
 
+      <!-- Campos específicos para especialista -->
       <div *ngIf="userType === 'especialista'">
-        <!-- Especialidad para especialistas -->
         <div class="mb-3">
-          <mat-form-field>
+          <mat-form-field appearance="fill" style="width: 100%">
             <mat-label>Especialidad</mat-label>
-            <mat-select
-              [(ngModel)]="especialidadSeleccionadas"
-              name="especialidadSeleccionadas"
-              multiple
-            >
+            <mat-select formControlName="especialidadSeleccionadas" multiple>
               <mat-option
                 *ngFor="let especialidad of especialidades"
                 [value]="especialidad"
@@ -142,17 +170,28 @@
               </mat-option>
             </mat-select>
           </mat-form-field>
+          <div
+            *ngIf="
+              formulario.get('especialidadSeleccionadas')?.invalid &&
+              formulario.get('especialidadSeleccionadas')?.touched
+            "
+            class="text-danger small"
+          >
+            Debe seleccionar al menos una especialidad.
+          </div>
         </div>
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="otraCheckbox"
-          [(ngModel)]="otraSeleccionada"
-          name="otraSeleccionada"
-        />
-        <label class="form-check-label" for="otraCheckbox"> Otra </label>
 
-        <div class="mb-3" *ngIf="otraSeleccionada">
+        <div class="form-check mb-3">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="otraCheckbox"
+            formControlName="otraSeleccionada"
+          />
+          <label class="form-check-label" for="otraCheckbox"> Otra </label>
+        </div>
+
+        <div class="mb-3" *ngIf="formulario.get('otraSeleccionada')?.value">
           <label for="nuevaEspecialidad" class="form-label"
             >Especificar Especialidad</label
           >
@@ -160,12 +199,28 @@
             type="text"
             class="form-control"
             id="nuevaEspecialidad"
-            name="nuevaEspecialidad"
-            [(ngModel)]="nuevaEspecialidad"
+            formControlName="otraEspecialidad"
           />
-          <button class="btn btn-chip" (click)="agregarEspecialidad()">
+          <button
+            class="btn btn-chip mt-2"
+            (click)="agregarEspecialidad()"
+            type="button"
+          >
             <i class="bi bi-plus"></i> Agregar Especialidad
           </button>
+        </div>
+
+        <div class="mb-3">
+          <label for="imagenPerfilEspecialista" class="form-label"
+            >Imagen de Perfil</label
+          >
+          <input
+            type="file"
+            class="form-control"
+            id="imagenPerfilEspecialista"
+            (change)="onFileChange($event, 'imagenPerfil1')"
+            required
+          />
         </div>
       </div>
 
@@ -176,10 +231,16 @@
           type="email"
           class="form-control"
           id="email"
-          name="email"
-          [(ngModel)]="email"
-          required
+          formControlName="email"
         />
+        <div
+          *ngIf="
+            formulario.get('email')?.invalid && formulario.get('email')?.touched
+          "
+          class="text-danger small"
+        >
+          Ingrese un correo válido.
+        </div>
       </div>
 
       <!-- Contraseña -->
@@ -189,32 +250,26 @@
           type="password"
           class="form-control"
           id="contraseña"
-          name="contraseña"
-          required
-          minlength="6"
-          [(ngModel)]="password"
+          formControlName="password"
         />
+        <div
+          *ngIf="
+            formulario.get('password')?.invalid &&
+            formulario.get('password')?.touched
+          "
+          class="text-danger small"
+        >
+          La contraseña debe tener al menos 6 caracteres.
+        </div>
       </div>
 
-      <!-- Imagen de perfil -->
-      <div class="mb-3" *ngIf="userType === 'especialista'">
-        <label for="imagenPerfil" class="form-label">Imagen de Perfil</label>
-        <input
-          type="file"
-          class="form-control"
-          id="imagenPerfil"
-          name="imagenPerfil"
-          accept="image/*"
-          required
-          (change)="onFileChange($event, 'imagenPerfil1')"
-        />
-      </div>
-
+      <app-captcha (captchaValidoChange)="captchaValido = $event"></app-captcha>
+      <!-- Botón de envío -->
       <div class="mb-3">
         <button
           type="submit"
           class="btn btn-primary w-100"
-          (click)="agregarUsuario()"
+          [disabled]="formulario.invalid || !captchaValido"
         >
           Registrar
         </button>
