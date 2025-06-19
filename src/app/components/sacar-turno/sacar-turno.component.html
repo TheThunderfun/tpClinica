@@ -1,0 +1,81 @@
+<div class="container py-5">
+  <div class="card shadow-lg p-4 rounded">
+    <h2 class="mb-4 text-primary text-center border-bottom pb-2">
+      Solicitar Turno
+    </h2>
+
+    <form [formGroup]="formulario" (ngSubmit)="enviarTurno()">
+      <!-- ESPECIALIDAD -->
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Especialidad</label>
+        <select class="form-select" formControlName="especialidad">
+          <option value="">Seleccionar especialidad</option>
+          <option *ngFor="let esp of especialidades" [value]="esp.nombre">
+            {{ esp.nombre }}
+          </option>
+        </select>
+      </div>
+
+      <!-- ESPECIALISTA -->
+      <div class="mb-3" *ngIf="especialistas.length > 0">
+        <label class="form-label fw-semibold">Especialista</label>
+        <select class="form-select" formControlName="especialista">
+          <option value="">Seleccionar especialista</option>
+          <option *ngFor="let e of especialistas" [value]="e.id">
+            {{ e.nombre }} {{ e.apellido }}
+          </option>
+        </select>
+      </div>
+
+      <!-- DÍAS DISPONIBLES -->
+      <div class="mb-4" *ngIf="diasDisponibles.length > 0">
+        <label class="form-label fw-semibold">Seleccionar Día</label>
+        <div class="d-flex flex-wrap gap-2">
+          <button
+            type="button"
+            class="btn px-3 py-2 rounded-pill"
+            [ngClass]="{
+              'btn-primary text-white': formulario.value.dia === d.fecha,
+              'btn-outline-primary': formulario.value.dia !== d.fecha
+            }"
+            *ngFor="let d of diasDisponibles"
+            (click)="formulario.patchValue({ dia: d.fecha })"
+          >
+            {{ d.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- HORARIOS DISPONIBLES -->
+      <div class="mb-4" *ngIf="horariosDisponibles.length > 0">
+        <label class="form-label fw-semibold">Seleccionar Horario</label>
+        <div class="d-flex flex-wrap gap-2">
+          <button
+            type="button"
+            class="btn px-3 py-2 rounded-pill"
+            [ngClass]="{
+              'btn-success text-white': formulario.value.horario === h,
+              'btn-outline-success': formulario.value.horario !== h
+            }"
+            *ngFor="let h of horariosDisponibles"
+            (click)="formulario.patchValue({ horario: h })"
+          >
+            {{ h }}
+          </button>
+        </div>
+      </div>
+
+      <!-- BOTÓN DE ENVIAR -->
+      <div class="text-center">
+        <button
+          type="submit"
+          class="btn btn-lg btn-primary px-5"
+          [disabled]="formulario.invalid"
+        >
+          <i class="bi bi-check-circle me-2"></i>
+          Confirmar Turno
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

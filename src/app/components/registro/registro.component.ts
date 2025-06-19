@@ -100,17 +100,40 @@ export class RegistroComponent implements OnInit {
   }
 
   async agregarEspecialidad(): Promise<void> {
-    if (this.nuevaEspecialidad.trim()) {
-      try {
-        await this.svEspcecialidades.agregarEspecialidad(
-          this.nuevaEspecialidad.trim()
-        );
-        this.nuevaEspecialidad = '';
-        // No hace falta recargar manualmente porque el servicio se suscribe a cambios
-      } catch (error) {
-        console.error('Error agregando especialidad:', error);
-      }
+    const nuevaEsp = this.formulario.get('otraEspecialidad')?.value?.trim();
+
+    if (!nuevaEsp) {
+      this.toastr.error('Ingrese una especialidad válida');
+      return;
     }
+
+    // Agregar localmente si no existe ya
+    if (!this.especialidades.includes(nuevaEsp)) {
+      this.especialidades.push(nuevaEsp);
+    }
+
+    // Actualizar especialidades seleccionadas del formulario
+    const seleccionadas: string[] =
+      this.formulario.get('especialidadSeleccionadas')?.value || [];
+    if (!seleccionadas.includes(nuevaEsp)) {
+      this.formulario
+        .get('especialidadSeleccionadas')
+        ?.setValue([...seleccionadas, nuevaEsp]);
+    }
+
+    // Llamar al servicio para guardar la especialidad globalmente
+    try {
+      await this.svEspcecialidades.agregarEspecialidad(nuevaEsp);
+    } catch (error) {
+      console.error('Error agregando especialidad al servicio:', error);
+      this.toastr.error('Error al guardar la especialidad');
+    }
+
+    // Limpiar input y checkbox
+    this.formulario.get('otraEspecialidad')?.setValue('');
+    this.formulario.get('otraSeleccionada')?.setValue(false);
+
+    this.toastr.success(`Especialidad "${nuevaEsp}" agregada`);
   }
 
   setUserType(tipo: 'paciente' | 'especialista') {
@@ -142,32 +165,34 @@ export class RegistroComponent implements OnInit {
 
   async agregarUsuario(): Promise<void> {
     try {
-      // Validar que userType esté definido
       if (!this.userType) {
         this.toastr.error('Debe seleccionar un tipo de usuario');
         return;
       }
 
-      // Validaciones básicas de campos obligatorios
-      if (
-        !this.nombre ||
-        !this.apellido ||
-        !this.email ||
-        !this.dni ||
-        !this.edad ||
-        !this.password
-      ) {
+      const {
+        nombre,
+        apellido,
+        email,
+        dni,
+        edad,
+        password,
+        obraSocial,
+        especialidadSeleccionadas,
+        otraEspecialidad,
+        otraSeleccionada,
+      } = this.formulario.value;
+
+      if (!nombre || !apellido || !email || !dni || !edad || !password) {
         this.toastr.error('Por favor complete todos los campos obligatorios');
         return;
       }
 
-      // Variable usuario y arreglo de imágenes
       let usuario: Usuario;
       let imagenes: File[] = [];
 
       if (this.userType === 'paciente') {
-        // Validar campos de paciente
-        if (!this.obraSocial) {
+        if (!obraSocial) {
           this.toastr.error('Por favor ingrese la obra social');
           return;
         }
@@ -177,14 +202,14 @@ export class RegistroComponent implements OnInit {
         }
 
         usuario = new Paciente(
-          null, // id, se genera en backend
-          this.nombre,
-          this.apellido,
-          this.email,
-          this.dni,
-          this.edad,
-          this.obraSocial,
+          null,
+          nombre,
+          apellido,
+          email,
+          dni,
+          edad,
           '',
+          obraSocial,
           ''
         );
 
@@ -193,22 +218,14 @@ export class RegistroComponent implements OnInit {
           this.archivos['imagenPerfil2'],
         ];
       } else if (this.userType === 'especialista') {
-        // Validar especialidad
-
-        console.log(this.especialidadSeleccionadas);
-        if (
-          (!this.especialidadSeleccionadas ||
-            this.especialidadSeleccionadas.length === 0) &&
-          !this.otraEspecialidad
-        ) {
-          this.toastr.error('Debe seleccionar o agregar una especialidad');
-          return;
+        let especialidadesFinales = [...(especialidadSeleccionadas || [])];
+        if (otraSeleccionada && otraEspecialidad.trim()) {
+          especialidadesFinales.push(otraEspecialidad.trim());
         }
 
-        // Si está marcada "otra", agregarla a especialidadSeleccionadas
-        let especialidadesFinales = [...(this.especialidadSeleccionadas || [])];
-        if (this.otraSeleccionada && this.otraEspecialidad.trim()) {
-          especialidadesFinales.push(this.otraEspecialidad.trim());
+        if (!especialidadesFinales.length) {
+          this.toastr.error('Debe seleccionar o agregar una especialidad');
+          return;
         }
 
         if (!this.archivos['imagenPerfil1']) {
@@ -220,15 +237,15 @@ export class RegistroComponent implements OnInit {
 
         usuario = new Especialista(
           null,
-          this.nombre,
-          this.apellido,
-          this.email,
-          this.dni,
-          this.edad,
-          '', // imagenPerfil URL será guardado en backend luego de subir la imagen
+          nombre,
+          apellido,
+          email,
+          dni,
+          edad,
+          '',
           especialidadesFinales,
-          [], // jornada (puede agregar si corresponde)
-          false // autorizado
+          [],
+          false
         );
 
         imagenes = [this.archivos['imagenPerfil1']];
@@ -237,7 +254,7 @@ export class RegistroComponent implements OnInit {
         return;
       }
 
-      const user = await this.svAuth.signUp(this.email, this.password);
+      const user = await this.svAuth.signUp(email, password);
       usuario.id = user.id;
 
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -247,25 +264,17 @@ export class RegistroComponent implements OnInit {
         imagenes.filter((f) => f)
       );
 
-      this.toastr.error('Usuario registrado con éxito');
+      this.toastr.success('Usuario registrado con éxito');
 
-      // Limpiar formulario (opcional)
-      this.nombre = '';
-      this.apellido = '';
-      this.email = '';
-      this.dni = null!;
-      this.edad = null!;
-      this.password = '';
-      this.obraSocial = '';
-      this.especialidadSeleccionadas = [];
-      this.otraSeleccionada = false;
-      this.otraEspecialidad = '';
+      console.log('userType:', this.userType);
+      console.log('formulario.value:', this.formulario.value);
+      this.formulario.reset();
+      this.userType = null;
       this.archivos = {};
     } catch (error) {
       console.error('Error registrando usuario:', error);
       this.toastr.error('Ocurrió un error al registrar el usuario.');
     }
   }
-
   captchaValido = false;
 }

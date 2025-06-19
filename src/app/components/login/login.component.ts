@@ -61,8 +61,8 @@ export class LoginComponent {
     },
     {
       nombre: 'Paciente 2',
-      email: 'paciente2@mail.com',
-      password: '123456',
+      email: '8hk9t7m0ju@qzueos.com',
+      password: 'paciente',
       imagen: 'assets/users/p2.png',
     },
     {
@@ -79,8 +79,8 @@ export class LoginComponent {
     },
     {
       nombre: 'Especialista 2',
-      email: 'especialista2@mail.com',
-      password: '123456',
+      email: 'bu49trhxuj@cmhvzylmfc.com',
+      password: 'especialista',
       imagen: 'assets/users/e2.png',
     },
     {

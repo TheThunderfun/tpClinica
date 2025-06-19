@@ -1,0 +1,160 @@
+<div class="container mt-5" *ngIf="usuarioActual">
+  <div class="card shadow-lg border-0">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Mi Perfil</h4>
+    </div>
+    <div class="card-body">
+      <!-- Paciente -->
+      <div *ngIf="isPaciente(usuarioActual)" class="mt-3">
+        <h5 class="mb-4 border-bottom pb-2">Datos del Paciente</h5>
+        <div class="row align-items-center gy-3">
+          <!-- Imagen 1 a la izquierda -->
+          <div class="col-md-3 text-center">
+            <img
+              *ngIf="usuarioActual.imagenPerfil"
+              [src]="usuarioActual.imagenPerfil"
+              alt="Imagen de perfil"
+              class="img-thumbnail border border-3 border-primary shadow-sm"
+              style="max-width: 100%; height: auto; object-fit: cover"
+            />
+          </div>
+
+          <!-- Datos personales en el medio -->
+          <div class="col-md-6 fs-6">
+            <p><strong>Nombre:</strong> {{ usuarioActual.nombre }}</p>
+            <p><strong>Apellido:</strong> {{ usuarioActual.apellido }}</p>
+            <p><strong>Edad:</strong> {{ usuarioActual.edad }}</p>
+            <p><strong>DNI:</strong> {{ usuarioActual.dni }}</p>
+            <p><strong>Email:</strong> {{ usuarioActual.email }}</p>
+            <p><strong>Obra Social:</strong> {{ usuarioActual.obraSocial }}</p>
+          </div>
+
+          <!-- Imagen 2 a la derecha -->
+          <div class="col-md-3 text-center">
+            <img
+              *ngIf="usuarioActual.imagenPerfil2"
+              [src]="usuarioActual.imagenPerfil2"
+              alt="Foto adicional"
+              class="img-thumbnail border border-3 border-primary shadow-sm"
+              style="max-width: 100%; height: auto; object-fit: cover"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Especialista -->
+      <div *ngIf="isEspecialista(usuarioActual)" class="mt-5">
+        <h5 class="mb-4 border-bottom pb-2">Datos del Especialista</h5>
+        <div class="row align-items-center">
+          <!-- Imagen a la izquierda -->
+          <div class="col-md-4 text-center mb-3 mb-md-0">
+            <img
+              [src]="usuarioActual.imagenPerfil"
+              alt="Imagen de perfil especialista"
+              class="img-thumbnail border border-3 border-primary shadow"
+              style="max-width: 100%; height: auto; object-fit: cover"
+            />
+          </div>
+
+          <!-- Datos a la derecha -->
+          <div class="col-md-8 fs-6">
+            <p><strong>Nombre:</strong> {{ usuarioActual.nombre }}</p>
+            <p><strong>Apellido:</strong> {{ usuarioActual.apellido }}</p>
+            <p><strong>Edad:</strong> {{ usuarioActual.edad }}</p>
+            <p><strong>DNI:</strong> {{ usuarioActual.dni }}</p>
+            <p><strong>Email:</strong> {{ usuarioActual.email }}</p>
+            <p>
+              <strong>Especialidades:</strong>
+              {{ usuarioActual.especialidad.join(", ") }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORMULARIO DE HORARIOS -->
+  <form
+    (ngSubmit)="guardarHorarios()"
+    class="p-4 mt-5 border rounded shadow-sm bg-light"
+    *ngIf="isEspecialista(usuarioActual)"
+    style="max-width: 700px; margin: 2rem auto"
+  >
+    <div class="mb-4">
+      <label class="form-label fw-bold fs-5 d-block mb-3 text-primary">
+        Elegí los días que trabajás:
+      </label>
+      <div *ngFor="let dia of diasSemana" class="form-check form-check-inline">
+        <input
+          type="checkbox"
+          class="form-check-input"
+          [id]="dia"
+          [checked]="diasSeleccionados.has(dia)"
+          (change)="toggleDia(dia)"
+        />
+        <label
+          [for]="dia"
+          class="form-check-label fw-semibold"
+          style="user-select: none; cursor: pointer"
+        >
+          {{ dia }}
+        </label>
+      </div>
+    </div>
+
+    <div *ngFor="let dia of getDiasSeleccionados()" class="mb-5">
+      <h5 class="text-secondary border-bottom pb-2 mb-4">{{ dia }}</h5>
+
+      <div
+        *ngFor="let esp of especialista?.especialidad"
+        class="mb-4 p-3 rounded bg-white shadow-sm border"
+      >
+        <label class="form-label fw-semibold fs-6 text-dark d-block mb-3">
+          {{ esp }}
+        </label>
+        <div class="row gx-3 align-items-center">
+          <div class="col-md-5">
+            <label for="{{ dia + '-' + esp + '-inicio' }}" class="form-label">
+              Desde
+            </label>
+            <input
+              type="time"
+              class="form-control form-control-sm"
+              [(ngModel)]="horarios[dia][esp].horaInicio"
+              [name]="dia + '-' + esp + '-inicio'"
+              id="{{ dia + '-' + esp + '-inicio' }}"
+              (change)="validarHorarios()"
+              required
+            />
+          </div>
+          <div class="col-md-5">
+            <label for="{{ dia + '-' + esp + '-fin' }}" class="form-label">
+              Hasta
+            </label>
+            <input
+              type="time"
+              class="form-control form-control-sm"
+              [(ngModel)]="horarios[dia][esp].horaFinal"
+              [name]="dia + '-' + esp + '-fin'"
+              id="{{ dia + '-' + esp + '-fin' }}"
+              (change)="validarHorarios()"
+              required
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="errorValidacion" class="alert alert-danger fw-semibold">
+      {{ errorValidacion }}
+    </div>
+
+    <button
+      type="submit"
+      class="btn btn-success btn-lg w-100"
+      [disabled]="errorValidacion"
+    >
+      Guardar Horarios
+    </button>
+  </form>
+</div>

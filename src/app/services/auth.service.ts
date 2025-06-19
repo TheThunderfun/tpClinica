@@ -3,6 +3,10 @@ import { User } from '@supabase/supabase-js';
 import { SupabaseService } from './supabase.service';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Usuario } from '../class/usuario';
+import { Admin } from '../class/admin';
+import { Especialista } from '../class/especialista';
+import { Paciente } from '../class/paciente';
+import dayjs from 'dayjs';
 
 @Injectable({
   providedIn: 'root',
@@ -38,19 +42,73 @@ export class AuthService {
   }
 
   private async cargarPerfilUsuario(email: string) {
-    const { data: usuarioData, error } = await this.supabase.client
+    const { data: u, error } = await this.supabase.client
       .from('usuarios')
       .select('*')
       .eq('email', email)
       .single();
 
-    if (error || !usuarioData) {
+    if (error || !u) {
       this.usuarioSubject.next(null);
-    } else {
-      this.usuarioSubject.next(usuarioData);
+      return;
     }
-  }
 
+    let usuario: Usuario;
+
+    switch (u.rol) {
+      case 'paciente':
+        usuario = new Paciente(
+          u.id,
+          u.nombre,
+          u.apellido,
+          u.email,
+          u.dni,
+          u.edad,
+          u.imagenPerfil,
+          u.obraSocial,
+          u.imagenPerfil2
+        );
+        break;
+      case 'especialista':
+        const jornadaParseada = u.jornada
+          ? u.jornada.map((j: any) => ({
+              dia: j.dia,
+              horaInicio: dayjs(j.horaInicio),
+              horaFinal: dayjs(j.horaFinal),
+            }))
+          : null;
+
+        usuario = new Especialista(
+          u.id,
+          u.nombre,
+          u.apellido,
+          u.email,
+          u.dni,
+          u.edad,
+          u.imagenPerfil,
+          u.especialidad,
+          jornadaParseada,
+          u.autorizado
+        );
+        break;
+      case 'administrador':
+        usuario = new Admin(
+          u.id,
+          u.nombre,
+          u.apellido,
+          u.email,
+          u.dni,
+          u.edad,
+          u.imagenPerfil
+        );
+        break;
+      default:
+        this.usuarioSubject.next(null);
+        return;
+    }
+
+    this.usuarioSubject.next(usuario);
+  }
   async signIn(email: string, password: string): Promise<User | string> {
     const { data, error } = await this.supabase.auth.signInWithPassword({
       email,

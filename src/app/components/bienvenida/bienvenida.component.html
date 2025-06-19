@@ -1,45 +1,87 @@
-
 <div class="bg-light min-vh-100 d-flex align-items-center py-5">
   <div class="container">
     <div class="row align-items-center">
-
-      <div class="col-md-6 text-center text-md-start mb-4 mb-md-0">
+      <!-- IZQUIERDA: Texto Bienvenida -->
+      <div
+        class="col-md-6 text-center text-md-start mb-4 mb-md-0 animate__animated animate__fadeInLeft"
+      >
         <h1 class="display-4 fw-bold text-primary">
-          Bienvenidos a Clínica Curita
+          Bienvenidos a <span class="text-info">Clínica Curita</span>
         </h1>
-        <p class="lead text-secondary mt-3">
-          Tu salud es nuestra prioridad. En Clínica Curita, brindamos atención
-          médica integral con profesionalismo, empatía y tecnología de
-          vanguardia.
+        <p class="lead text-dark mt-3">
+          Tu salud es nuestra prioridad. Brindamos atención médica integral con
+          profesionalismo, empatía y tecnología de vanguardia.
         </p>
-        <p class="text-muted">
-          Contamos con un equipo interdisciplinario que trabaja día a día para
-          cuidar de vos y tu familia. Ofrecemos turnos rápidos, atención
-          personalizada y una amplia gama de especialidades médicas.
-        </p>
-        <div class="mt-4">
-          <a class="btn btn-primary btn-lg me-3" routerLink="/turnos"
-            >Solicitar Turno</a
-          >
-          <a class="btn btn-outline-secondary btn-lg" routerLink="/nosotros"
-            >Conocé al equipo</a
-          >
+        <ul class="list-unstyled text-muted">
+          <li>
+            <i class="bi bi-check-circle-fill text-success me-2"></i>Turnos
+            rápidos y online
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill text-success me-2"></i>Atención
+            personalizada
+          </li>
+          <li>
+            <i class="bi bi-check-circle-fill text-success me-2"></i>Amplia gama
+            de especialidades
+          </li>
+        </ul>
+        <div
+          class="mt-4 d-flex flex-column flex-sm-row justify-content-center justify-content-md-start gap-3"
+        >
+          <a class="btn btn-primary btn-lg" routerLink="/turnos">
+            <i class="bi bi-calendar-check me-2"></i>Solicitar Turno
+          </a>
+          <a class="btn btn-outline-secondary btn-lg" routerLink="/nosotros">
+            <i class="bi bi-people-fill me-2"></i>Conocé al equipo
+          </a>
         </div>
       </div>
 
-
-      <div class="col-md-6 text-center">
+      <!-- DERECHA: Imagen -->
+      <div class="col-md-6 text-center animate__animated animate__fadeInRight">
         <img
           src="https://img.freepik.com/foto-gratis/cientificos-tomas-medias-posando-juntos_23-2148969982.jpg"
           alt="Equipo médico"
-          class="img-fluid rounded shadow"
+          class="img-fluid rounded shadow-lg"
         />
       </div>
     </div>
   </div>
 </div>
 
+<!-- Beneficios -->
+<section class="bg-white py-5 border-top">
+  <div class="container">
+    <div class="row text-center">
+      <div class="col-md-4 mb-4 mb-md-0">
+        <i class="bi bi-heart-pulse-fill fs-1 text-danger"></i>
+        <h5 class="mt-3">Atención Humanizada</h5>
+        <p class="text-muted">
+          Nos enfocamos en brindar contención emocional y calidez en cada
+          consulta.
+        </p>
+      </div>
+      <div class="col-md-4 mb-4 mb-md-0">
+        <i class="bi bi-hospital fs-1 text-primary"></i>
+        <h5 class="mt-3">Instalaciones Modernas</h5>
+        <p class="text-muted">
+          Ambientes renovados, accesibles y con equipamiento de última
+          generación.
+        </p>
+      </div>
+      <div class="col-md-4">
+        <i class="bi bi-clock-history fs-1 text-success"></i>
+        <h5 class="mt-3">Turnos Flexibles</h5>
+        <p class="text-muted">
+          Elegí el día y horario que mejor se adapte a tu rutina diaria.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
 
+<!-- Footer -->
 <footer class="text-center py-4 bg-white border-top">
   <small class="text-muted"
     >&copy; 2025 Clínica Curita. Todos los derechos reservados.</small

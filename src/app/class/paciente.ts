@@ -24,7 +24,7 @@ export class Paciente implements Usuario {
     obraSocial: string,
     imagenPerfil2: string
   ) {
-
+    this.id = id ?? undefined;
     this.nombre = nombre;
     this.apellido = apellido;
     this.email = email;

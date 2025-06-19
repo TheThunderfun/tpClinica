@@ -19,7 +19,7 @@ export class Admin implements Usuario {
     edad: number,
     imagenPerfil: string
   ) {
-
+    this.id = id ?? undefined;
     this.nombre = nombre;
     this.apellido = apellido;
     this.email = email;

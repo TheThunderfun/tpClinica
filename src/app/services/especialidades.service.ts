@@ -42,4 +42,12 @@ export class EspecialidadesService {
       .insert({ nombre: especialidad });
     if (error) throw error;
   }
+
+  async obtenerEspecialidades() {
+    const { data, error } = await this.supabase.client
+      .from('especialidades')
+      .select('*');
+    if (error) throw error;
+    return data;
+  }
 }

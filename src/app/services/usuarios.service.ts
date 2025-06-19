@@ -6,6 +6,14 @@ import { Especialista } from '../class/especialista';
 import { SupabaseService } from './supabase.service';
 import { Admin } from '../class/admin';
 import dayjs from 'dayjs';
+
+export interface HorarioPorDia {
+  dia: string; // 'Lunes', 'Martes', etc.
+  especialidad: string;
+  horaInicio: string; // formato HH:mm
+  horaFinal: string; // formato HH:mm
+}
+
 type UsuarioCompleto = Paciente | Especialista | Admin;
 @Injectable({
   providedIn: 'root',
@@ -162,5 +170,146 @@ export class UsuariosService {
     });
 
     return usuariosConvertidos;
+  }
+
+  async actualizarJornada(
+    email: string,
+    jornada: HorarioPorDia[]
+  ): Promise<void> {
+    const { error } = await this.supabase.client
+      .from('usuarios')
+      .update({ jornada })
+      .eq('email', email);
+
+    if (error) throw new Error('Error al guardar jornada: ' + error.message);
+  }
+  async obtenerUsuario(email: string): Promise<Usuario | null> {
+    const { data, error } = await this.supabase.client
+      .from('usuarios')
+      .select('*')
+      .eq('email', email)
+      .single();
+
+    if (error) {
+      console.error('Error al obtener usuario:', error);
+      return null;
+    }
+
+    if (!data) {
+      console.warn('Usuario no encontrado para email:', email);
+      return null;
+    }
+
+    // Según el rol, devolvemos la instancia correcta
+    if (data.rol === 'especialista') {
+      return new Especialista(
+        data.id,
+        data.nombre,
+        data.apellido,
+        data.email,
+        data.dni,
+        data.edad,
+        data.imagenPerfil,
+        data.especialidad || [],
+        data.jornada || [],
+        data.autorizado || false
+      );
+    } else if (data.rol === 'paciente') {
+      return new Paciente(
+        data.id,
+        data.nombre,
+        data.apellido,
+        data.email,
+        data.dni,
+        data.edad,
+        data.imagenPerfil,
+        data.obraSocial || '',
+        data.imagenPerfil2 || ''
+      );
+    } else {
+      // Usuario genérico, si tenés clase base o solo devolver el objeto
+      return data;
+    }
+  }
+
+  async actualizarDisponibilidad(
+    especialistaId: string,
+    bloques: {
+      especialista_id: string;
+      dia_semana: string;
+      horario_inicio: string;
+    }[]
+  ): Promise<void> {
+    // 1. Borrar los anteriores
+    await this.supabase.client
+      .from('disponibilidad_especialistas')
+      .delete()
+      .eq('especialista_id', especialistaId);
+
+    // 2. Insertar nuevos
+    const { error } = await this.supabase.client
+      .from('disponibilidad_especialistas')
+      .insert(bloques);
+
+    if (error) {
+      throw new Error('Error al guardar disponibilidad: ' + error.message);
+    }
+  }
+
+  async obtenerDisponibilidadEspecialistaPorEspecialidad(
+    especialistaId: string,
+    especialidad: string
+  ): Promise<
+    { dia_semana: string; horario_inicio: string; especialidad: string }[]
+  > {
+    const { data, error } = await this.supabase.client
+      .from('disponibilidad_especialistas')
+      .select('dia_semana, horario_inicio, especialidad')
+      .eq('especialista_id', especialistaId)
+      .eq('especialidad', especialidad);
+
+    if (error) {
+      throw new Error('Error al obtener disponibilidad: ' + error.message);
+    }
+
+    return data || [];
+  }
+
+  async obtenerEspecialistasPorEspecialidad(especialidad: string) {
+    const { data, error } = await this.supabase.client
+      .from('usuarios')
+      .select('*')
+      .eq('rol', 'especialista')
+      .contains('especialidad', [especialidad]);
+
+    if (error) throw error;
+    return data;
+  }
+
+  async obtenerTurnosPorEspecialistaYFecha(
+    especialistaId: string,
+    fecha: string
+  ): Promise<string[]> {
+    const { data, error } = await this.supabase.client
+      .from('turnos')
+      .select('hora_turno')
+      .eq('especialista_id', especialistaId)
+      .eq('fecha_turno', fecha)
+      .in('estado', ['pendiente', 'confirmado']); // opcional: filtrar por estado
+
+    if (error) {
+      throw new Error('Error al obtener turnos: ' + error.message);
+    }
+
+    // Devuelve un array de strings como ['10:00', '10:30']
+    return data.map((t) => t.hora_turno);
+  }
+
+  async insertarTurno(turno: any) {
+    const { error } = await this.supabase.client.from('turnos').insert([turno]);
+
+    if (error) {
+      throw error;
+    }
   }
 }

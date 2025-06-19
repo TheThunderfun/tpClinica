@@ -1,16 +1,30 @@
 <div class="captcha-container">
-  <label class="captcha-label">Resuelve la siguiente operación:</label>
-  <p class="captcha-text"><strong>{{ captchaText }}</strong></p>
+  <label class="captcha-label">Resuelve la operación:</label>
+  <canvas
+    #captchaCanvas
+    width="160"
+    height="40"
+    class="captcha-canvas"
+  ></canvas>
+
   <input
     [(ngModel)]="captchaRespuesta"
-    placeholder="Escribe la respuesta"
-    class="captcha-input"
     type="number"
+    placeholder="Respuesta"
+    class="captcha-input"
   />
-  <button (click)="validarCaptcha()" class="captcha-button">
+
+  <button type="button" (click)="validarCaptcha()" class="captcha-button">
     Validar
   </button>
+
   <p *ngIf="captchaError" class="captcha-error">
     Respuesta incorrecta, intenta de nuevo.
+  </p>
+  <p
+    *ngIf="!captchaError && captchaRespuesta && captchaValido"
+    class="text-success mt-2"
+  >
+    ✅ Respuesta correcta
   </p>
 </div>
