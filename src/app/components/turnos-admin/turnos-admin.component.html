@@ -1,1 +1,80 @@
-<p>turnos-admin works!</p>
+<div class="container py-4">
+  <h2 class="mb-4 text-primary text-center">Gestión de Turnos</h2>
+
+  <form [formGroup]="filtroForm" class="row g-2 mb-4">
+    <div class="col-md-6">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Filtrar por especialidad"
+        formControlName="especialidad"
+      />
+    </div>
+    <div class="col-md-6">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Filtrar por especialista"
+        formControlName="especialista"
+      />
+    </div>
+  </form>
+
+  <div *ngIf="cargando" class="text-center my-3">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <table
+    class="table table-striped"
+    *ngIf="!cargando && turnosFiltrados.length > 0"
+  >
+    <thead>
+      <tr>
+        <th>Especialidad</th>
+        <th>Especialista</th>
+        <th>Paciente</th>
+        <th>Fecha</th>
+        <th>Hora</th>
+        <th>Estado</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let turno of turnosFiltrados">
+        <td>{{ turno.especialidad }}</td>
+        <td>
+          {{ turno.especialista.nombre }} {{ turno.especialista.apellido }}
+        </td>
+        <td>{{ turno.paciente.nombre }} {{ turno.paciente.apellido }}</td>
+        <td>{{ turno.fecha_turno | date : "dd/MM/yyyy" }}</td>
+        <td>{{ turno.hora_turno }}</td>
+        <td
+          [ngClass]="{
+            'text-success': turno.estado.toLowerCase() === 'aceptado',
+            'text-danger': turno.estado.toLowerCase() === 'cancelado',
+            'text-warning': turno.estado.toLowerCase() === 'pendiente'
+          }"
+        >
+          {{ turno.estado }}
+        </td>
+        <td>
+          <button
+            *ngIf="puedeCancelar(turno)"
+            class="btn btn-danger btn-sm"
+            (click)="cancelarTurno(turno)"
+          >
+            Cancelar
+          </button>
+          <span *ngIf="!puedeCancelar(turno)">-</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div
+    *ngIf="!cargando && turnosFiltrados.length === 0"
+    class="alert alert-info"
+  >
+    No hay turnos que coincidan con los filtros.
+  </div>
+</div>

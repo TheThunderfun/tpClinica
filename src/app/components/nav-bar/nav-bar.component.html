@@ -1,13 +1,16 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <div class="container-fluid">
-    <img
-      src="../../../assets/images/apple-touch-icon.png"
-      alt="Logotipo Clínica"
-      width="50"
-      height="50"
-      class="d-inline-block align-text-top"
-    />
-    <a class="navbar-brand" href="#">Clínica Curita</a>
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm py-3">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center" href="#">
+      <img
+        src="../../../assets/images/apple-touch-icon.png"
+        alt="Logotipo Clínica"
+        width="40"
+        height="40"
+        class="me-2"
+      />
+      <strong class="fs-4 text-primary">Clínica Curita</strong>
+    </a>
+
     <button
       class="navbar-toggler"
       type="button"
@@ -19,47 +22,57 @@
     >
       <span class="navbar-toggler-icon"></span>
     </button>
+
     <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
+      <ul class="navbar-nav ms-auto align-items-center">
         <li class="nav-item">
-          <a class="nav-link" aria-current="page" href="#">Inicio</a>
+          <a class="nav-link fw-semibold" href="#">Inicio</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="servicios">Servicios</a>
+
+        <li class="nav-item" *ngIf="usuario$ | async as usuario">
+          <a class="nav-link fw-semibold" href="/turnos/misTurnos"
+            >Mis Turnos</a
+          >
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Especialistas</a>
+
+        <li class="nav-item" *ngIf="usuario$ | async as usuario">
+          <a class="nav-link fw-semibold" href="/turnos/solicitarTurno"
+            >Sacar Turno</a
+          >
         </li>
-        <li class="nav-item">
-          <a class="nav-link" href="#">Contacto</a>
-        </li>
+
         <li
           class="nav-item"
           *ngIf="(usuario$ | async)?.rol === 'administrador'"
         >
-          <a class="nav-link" href="/usuarios">Usuarios</a>
+          <a class="nav-link fw-semibold" href="/usuarios">Usuarios</a>
         </li>
-        <!-- <li class="nav-item">
-          <a class="nav-link" href="/login">Login</a>
-        </li> -->
+
+        <li
+          class="nav-item"
+          *ngIf="(usuario$ | async)?.rol === 'administrador'"
+        >
+          <a class="nav-link fw-semibold" href="/turnos/turnosAdmin"
+            >Todos los turnos</a
+          >
+        </li>
+
         <li class="nav-item" *ngIf="usuario$ | async as usuario">
-          <a class="nav-link" href="/miPerfil">Mi Perfil</a>
+          <a class="nav-link fw-semibold" href="/miPerfil">Mi Perfil</a>
         </li>
+
         <ng-container *ngIf="usuario$ | async as usuario; else login">
-          <li class="nav-item">
-            <button
-              class="btn btn-outline-danger btn-sm ms-3"
-              (click)="logout()"
-            >
-              Cerrar sesión
+          <li class="nav-item ms-2">
+            <button class="btn btn-sm btn-outline-danger" (click)="logout()">
+              <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
             </button>
           </li>
         </ng-container>
 
         <ng-template #login>
-          <li class="nav-item">
-            <a class="btn btn-outline-primary btn-sm ms-3" href="/login">
-              Iniciar sesión
+          <li class="nav-item ms-2">
+            <a class="btn btn-sm btn-primary" href="/login">
+              <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar sesión
             </a>
           </li>
         </ng-template>

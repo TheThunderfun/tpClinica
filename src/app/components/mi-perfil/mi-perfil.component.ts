@@ -29,6 +29,7 @@ export interface HorarioPorDia {
 export class MiPerfilComponent {
   usuarioActual: Usuario | null = null;
   diasSemana: string[] = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  
 
   horarios: {
     [dia: string]: {
@@ -48,7 +49,6 @@ export class MiPerfilComponent {
   ngOnInit() {
     this.authService.usuario$.subscribe(async (usuario) => {
       if (usuario?.rol === 'especialista') {
-        // Esperamos a obtener el usuario completo con jornada
         const usuarioCompleto = await this.usuariosService.obtenerUsuario(
           usuario.email
         );

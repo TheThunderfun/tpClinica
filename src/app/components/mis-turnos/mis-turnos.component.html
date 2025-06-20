@@ -1,1 +1,239 @@
-<p>mis-turnos works!</p>
+<div class="container py-4">
+  <h2 class="text-center text-primary mb-4">Mis Turnos</h2>
+
+  <form [formGroup]="filtroForm" class="row g-3 mb-4">
+    <div class="col-md-6">
+      <input
+        type="text"
+        class="form-control"
+        formControlName="especialidad"
+        placeholder="Filtrar por especialidad"
+      />
+    </div>
+    <div class="col-md-6">
+      <input
+        type="text"
+        class="form-control"
+        formControlName="filtroTexto"
+        [placeholder]="
+          rol === 'paciente'
+            ? 'Filtrar por especialista'
+            : 'Filtrar por paciente'
+        "
+      />
+    </div>
+  </form>
+
+  <div *ngIf="cargando" class="text-center my-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+
+  <table
+    class="table table-bordered table-hover align-middle"
+    *ngIf="!cargando && turnosFiltrados.length > 0"
+  >
+    <thead class="table-light">
+      <tr class="text-center">
+        <th>Especialidad</th>
+        <th>{{ rol === "paciente" ? "Especialista" : "Paciente" }}</th>
+        <th>Fecha</th>
+        <th>Hora</th>
+        <th>Estado</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let turno of turnosFiltrados" class="text-center">
+        <td>{{ turno.especialidad }}</td>
+        <td>
+          {{
+            rol === "paciente"
+              ? turno.especialista.nombre + " " + turno.especialista.apellido
+              : turno.paciente.nombre + " " + turno.paciente.apellido
+          }}
+        </td>
+        <td>{{ turno.fecha_turno | date : "dd/MM/yyyy" }}</td>
+        <td>{{ turno.hora_turno }}</td>
+        <td>
+          <span
+            class="badge text-bg-{{
+              turno.estado === 'realizado'
+                ? 'success'
+                : turno.estado === 'cancelado'
+                ? 'danger'
+                : turno.estado === 'aceptado'
+                ? 'primary'
+                : 'secondary'
+            }}"
+          >
+            {{ turno.estado }}
+          </span>
+        </td>
+        <td class="text-start">
+          <!-- BOTONES PACIENTE -->
+          <ng-container *ngIf="rol === 'paciente'">
+            <button
+              *ngIf="!puedeCancelar(turno)"
+              class="btn btn-sm btn-outline-danger me-1 mb-1"
+              (click)="abrirModal(turno, 'cancelar')"
+            >
+              Cancelar
+            </button>
+
+            <button
+              *ngIf="puedeCompletarEncuesta(turno)"
+              class="btn btn-sm btn-outline-warning me-1 mb-1"
+            >
+              Encuesta
+            </button>
+
+            <button
+              *ngIf="puedeCalificar(turno)"
+              class="btn btn-sm btn-outline-success me-1 mb-1"
+            >
+              Calificar
+            </button>
+
+            <button
+              *ngIf="puedeVerResena(turno)"
+              class="btn btn-sm btn-outline-info me-1 mb-1"
+              (click)="verResena(turno)"
+            >
+              Ver Reseña
+            </button>
+
+            <button
+              *ngIf="puedeVerResena(turno)"
+              class="btn btn-sm btn-outline-warning me-1 mb-1"
+              (click)="verDiagnostico(turno)"
+            >
+              Diagnostico
+            </button>
+
+            <button
+              *ngIf="verCancelacion(turno)"
+              class="btn btn-sm btn-outline-dark me-1 mb-1"
+              (click)="verMotivoCancelacion(turno)"
+            >
+              Ver Cancelación
+            </button>
+          </ng-container>
+
+          <!-- BOTONES ESPECIALISTA -->
+          <ng-container *ngIf="rol === 'especialista'">
+            <button
+              *ngIf="puedeAceptar(turno)"
+              class="btn btn-sm btn-outline-success me-1 mb-1"
+              (click)="aceptarTurno(turno)"
+            >
+              Aceptar
+            </button>
+
+            <button
+              *ngIf="puedeRechazar(turno)"
+              class="btn btn-sm btn-outline-warning me-1 mb-1"
+              (click)="abrirModal(turno, 'rechazar')"
+            >
+              Rechazar
+            </button>
+
+            <button
+              *ngIf="puedeCancelar(turno)"
+              class="btn btn-sm btn-outline-danger me-1 mb-1"
+              (click)="abrirModal(turno, 'cancelar')"
+            >
+              Cancelar
+            </button>
+
+            <button
+              *ngIf="puedeFinalizar(turno)"
+              class="btn btn-sm btn-outline-primary me-1 mb-1"
+              (click)="abrirModal(turno, 'finalizar')"
+            >
+              Finalizar
+            </button>
+
+            <button
+              *ngIf="puedeVerResena(turno)"
+              class="btn btn-sm btn-outline-info me-1 mb-1"
+              (click)="verResena(turno)"
+            >
+              Ver Reseña
+            </button>
+
+            <button
+              *ngIf="!verCancelacion(turno)"
+              class="btn btn-sm btn-outline-dark me-1 mb-1"
+              (click)="verMotivoCancelacion(turno)"
+            >
+              Ver Cancelación
+            </button>
+          </ng-container>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div
+    *ngIf="!cargando && turnosFiltrados.length === 0"
+    class="alert alert-info text-center"
+  >
+    No hay turnos disponibles para mostrar.
+  </div>
+</div>
+
+<div
+  class="modal fade"
+  id="modalAccion"
+  tabindex="-1"
+  aria-labelledby="modalAccionLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form (ngSubmit)="confirmarModal()">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalAccionLabel">{{ modalTitulo }}</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3" *ngIf="modalMostrarDiagnostico">
+            <label class="form-label">Diagnóstico</label>
+            <textarea
+              class="form-control"
+              [(ngModel)]="modalDiagnostico"
+              name="diagnostico"
+              required
+            ></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">{{ modalLabel }}</label>
+            <textarea
+              class="form-control"
+              [(ngModel)]="modalComentario"
+              name="comentario"
+              required
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Confirmar</button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

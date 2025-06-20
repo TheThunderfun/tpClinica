@@ -312,4 +312,124 @@ export class UsuariosService {
       throw error;
     }
   }
+
+  async obtenerPacientes() {
+    const { data, error } = await this.supabase.client
+      .from('usuarios')
+      .select('*')
+      .eq('rol', 'paciente');
+
+    if (error) {
+      throw new Error('Error al obtener pacientes: ' + error.message);
+    }
+
+    return data;
+  }
+
+  async obtenerTodosLosTurnos() {
+    const { data, error } = await this.supabase.client.from('turnos').select(`
+      id,
+      fecha_turno,
+      hora_turno,
+      estado,
+      especialidad,
+      reseña,
+      comentario_cancelacion,
+      especialista:especialista_id (
+        id,
+        nombre,
+        apellido
+      ),
+      paciente:paciente_id (
+        id,
+        nombre,
+        apellido,
+        email
+      )
+    `);
+
+    if (error) {
+      throw new Error('Error al obtener turnos: ' + error.message);
+    }
+
+    return data;
+  }
+
+  async cancelarTurno(turnoId: string, comentario: string): Promise<void> {
+    const { error } = await this.supabase.client
+      .from('turnos')
+      .update({ estado: 'cancelado', comentario_cancelacion: comentario })
+      .eq('id', turnoId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async verMotivoCancelacionTurno(turnoId: string) {
+    const { data, error } = await this.supabase.client
+      .from('turnos')
+      .select('comentario_cancelacion')
+      .eq('id', turnoId)
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data?.comentario_cancelacion ?? null;
+  }
+
+  async finalizarTurno(turnoId: string, reseña: string, diagnostico: string) {
+    const { error } = await this.supabase.client
+      .from('turnos')
+      .update({
+        estado: 'finalizado',
+        reseña: reseña,
+        diagnostico: diagnostico,
+      })
+      .eq('id', turnoId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async aceptarTurno(turnoId: string) {
+    const { error } = await this.supabase.client
+      .from('turnos')
+      .update({
+        estado: 'aceptado',
+      })
+      .eq('id', turnoId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async verResena(turnoId: string): Promise<string | null> {
+    const { data, error } = await this.supabase.client
+      .from('turnos')
+      .select('reseña')
+      .eq('id', turnoId)
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    return (data as any)['reseña'] ?? null;
+  }
+
+  async verDiagnostico(turnoId: string) {
+    const { data, error } = await this.supabase.client
+      .from('turnos')
+      .select('diagnostico')
+      .eq('id', turnoId)
+      .single();
+
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data?.diagnostico ?? null;
+  }
 }

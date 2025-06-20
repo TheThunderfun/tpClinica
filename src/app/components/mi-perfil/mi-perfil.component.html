@@ -43,7 +43,7 @@
       </div>
 
       <!-- Especialista -->
-      <div *ngIf="isEspecialista(usuarioActual)" class="mt-5">
+      <div *ngIf="!isPaciente(usuarioActual)" class="mt-5">
         <h5 class="mb-4 border-bottom pb-2">Datos del Especialista</h5>
         <div class="row align-items-center">
           <!-- Imagen a la izquierda -->
@@ -63,7 +63,7 @@
             <p><strong>Edad:</strong> {{ usuarioActual.edad }}</p>
             <p><strong>DNI:</strong> {{ usuarioActual.dni }}</p>
             <p><strong>Email:</strong> {{ usuarioActual.email }}</p>
-            <p>
+            <p *ngIf="isEspecialista(usuarioActual)">
               <strong>Especialidades:</strong>
               {{ usuarioActual.especialidad.join(", ") }}
             </p>

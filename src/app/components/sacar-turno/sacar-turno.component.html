@@ -5,6 +5,15 @@
     </h2>
 
     <form [formGroup]="formulario" (ngSubmit)="enviarTurno()">
+      <div class="mb-3" *ngIf="esAdmin">
+        <label class="form-label fw-semibold">Seleccionar Paciente</label>
+        <select class="form-select" formControlName="paciente">
+          <option value="">Seleccionar paciente</option>
+          <option *ngFor="let p of pacientes" [value]="p.id">
+            {{ p.nombre }} {{ p.apellido }}
+          </option>
+        </select>
+      </div>
       <!-- ESPECIALIDAD -->
       <div class="mb-3">
         <label class="form-label fw-semibold">Especialidad</label>

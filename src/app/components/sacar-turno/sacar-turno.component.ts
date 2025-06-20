@@ -15,6 +15,8 @@ import { ToastrService } from 'ngx-toastr';
 import { EspecialidadesService } from '../../services/especialidades.service';
 import { AuthService } from '../../services/auth.service';
 import 'dayjs/locale/es';
+import { Admin } from '../../class/admin';
+import { Usuario } from '../../class/usuario';
 dayjs.locale('es');
 
 @Component({
@@ -31,6 +33,8 @@ export class SacarTurnoComponent implements OnInit {
   diasDisponibles: { fecha: string; label: string }[] = [];
   horariosDisponibles: string[] = [];
   usuarioActual: any;
+  esAdmin: boolean = false;
+  pacientes: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -80,12 +84,33 @@ export class SacarTurnoComponent implements OnInit {
     });
 
     this.authService.usuario$.subscribe(async (usuario) => {
-      if (usuario?.email) {
-        this.usuarioActual = await this.usuariosSv.obtenerUsuario(
-          usuario.email
-        );
+      if (!usuario?.email) return;
+
+      const usuarioCompleto = await this.usuariosSv.obtenerUsuario(
+        usuario.email
+      );
+      this.usuarioActual = usuarioCompleto;
+      this.esAdmin = this.usuarioActual.rol === 'administrador';
+
+      console.log('Usuario actual:', this.usuarioActual);
+
+      if (this.esAdmin) {
+        const pacientes = await this.usuariosSv.obtenerPacientes();
+        this.pacientes = pacientes;
+
+        // Validar campo paciente si es admin
+        this.formulario.get('paciente')?.setValidators(Validators.required);
+        this.formulario.get('paciente')?.updateValueAndValidity();
+      } else {
+        // Si no es admin, remover validación por las dudas
+        this.formulario.get('paciente')?.clearValidators();
+        this.formulario.get('paciente')?.updateValueAndValidity();
       }
     });
+  }
+
+  isAdministrador(usuario: Usuario | null): usuario is Admin {
+    return !!usuario && usuario.rol === 'administrador';
   }
 
   async cargarEspecialidades() {
@@ -183,7 +208,9 @@ export class SacarTurnoComponent implements OnInit {
     const turnoData = {
       especialidad,
       especialista_id: especialista,
-      paciente_id: this.usuarioActual.id,
+      paciente_id: this.esAdmin
+        ? this.formulario.get('paciente')?.value
+        : this.usuarioActual?.id,
       fecha_turno: dia,
       hora_turno: horario,
       estado: 'pendiente',
