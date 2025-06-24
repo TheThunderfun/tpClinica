@@ -44,7 +44,8 @@
 
       <!-- Especialista -->
       <div *ngIf="!isPaciente(usuarioActual)" class="mt-5">
-        <h5 class="mb-4 border-bottom pb-2">Datos del Especialista</h5>
+        <h5 class="mb-4 border-bottom pb-2" *ngIf="isEspecialista(usuarioActual)">Datos del Especialista</h5>
+        <h5 class="mb-4 border-bottom pb-2" *ngIf="isAdministrador(usuarioActual)">Datos del Administrador</h5>
         <div class="row align-items-center">
           <!-- Imagen a la izquierda -->
           <div class="col-md-4 text-center mb-3 mb-md-0">

@@ -1,121 +1,123 @@
 <div class="container py-5">
-  <div class="card shadow-lg p-4 rounded">
-    <h2 class="mb-4 text-primary text-center border-bottom pb-2">
-      Solicitar Turno
-    </h2>
+  <form [formGroup]="formulario">
+    <div class="card shadow-lg p-4 rounded">
+      <h2 class="mb-4 text-primary text-center border-bottom pb-2">
+        Solicitar Turno
+      </h2>
 
-    <!-- Seleccionar Especialista -->
-    <div class="mb-4">
-      <label class="form-label fw-semibold">Seleccionar Especialista</label>
-      <div class="d-flex flex-wrap gap-3">
+      <!-- Seleccionar Especialista -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold">Seleccionar Especialista</label>
+        <div class="d-flex flex-wrap gap-3">
+          <button
+            *ngFor="let e of profesionales"
+            type="button"
+            class="btn"
+            [ngClass]="{
+              'btn-primary text-white': formulario.value.especialista === e.id,
+              'btn-outline-primary': formulario.value.especialista !== e.id
+            }"
+            (click)="seleccionarEspecialista(e)"
+          >
+            <img
+              [src]="e.imagenPerfil || 'assets/default-user.png'"
+              alt="Especialista"
+              class="rounded-circle mb-2"
+              width="60"
+              height="60"
+            />
+            <div>{{ e.nombre }} {{ e.apellido }}</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Seleccionar Especialidad del especialista -->
+      <div class="mb-3" *ngIf="especialidadesDelEspecialista.length > 0">
+        <label class="form-label fw-semibold">Seleccionar Especialidad</label>
+        <div class="d-flex flex-wrap gap-2">
+          <button
+            type="button"
+            class="btn"
+            *ngFor="let esp of especialidadesDelEspecialista"
+            [ngClass]="{
+              'btn-success text-white': formulario.value.especialidad === esp,
+              'btn-outline-success': formulario.value.especialidad !== esp
+            }"
+            (click)="seleccionarEspecialidad(esp)"
+          >
+            <img
+              [src]="getImagenEspecialidad(esp)"
+              alt="Especialidad"
+              width="50"
+              height="50"
+              class="mb-1"
+            />
+            <div>{{ esp }}</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Seleccionar Día -->
+      <div class="mb-4" *ngIf="diasDisponibles.length > 0">
+        <label class="form-label fw-semibold">Seleccionar Día</label>
+        <div class="d-flex flex-wrap gap-2">
+          <button
+            type="button"
+            class="btn btn-square"
+            *ngFor="let d of diasDisponibles"
+            [ngClass]="{
+              'btn-primary text-white': formulario.value.dia === d.fecha,
+              'btn-outline-primary': formulario.value.dia !== d.fecha
+            }"
+            (click)="formulario.patchValue({ dia: d.fecha })"
+          >
+            {{ d.fecha }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Seleccionar Horario -->
+      <div class="mb-4" *ngIf="horariosDisponibles.length > 0">
+        <label class="form-label fw-semibold">Seleccionar Horario</label>
+        <div class="d-flex flex-wrap gap-2">
+          <button
+            type="button"
+            class="btn btn-rect-rounded"
+            *ngFor="let h of horariosDisponibles"
+            [ngClass]="{
+              'btn-success text-white': formulario.value.horario === h,
+              'btn-outline-success': formulario.value.horario !== h
+            }"
+            (click)="formulario.patchValue({ horario: h })"
+          >
+            {{ h }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Seleccionar Paciente (solo admin) -->
+      <div class="mb-3" *ngIf="esAdmin">
+        <label class="form-label fw-semibold">Seleccionar Paciente</label>
+        <select class="form-select" formControlName="paciente">
+          <option value="">Seleccionar paciente</option>
+          <option *ngFor="let p of pacientes" [value]="p.id">
+            {{ p.nombre }} {{ p.apellido }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Botón Confirmar -->
+      <div class="text-center">
         <button
-          *ngFor="let e of profesionales"
           type="button"
-          class="btn"
-          [ngClass]="{
-            'btn-primary text-white': formulario.value.especialista === e.id,
-            'btn-outline-primary': formulario.value.especialista !== e.id
-          }"
-          (click)="seleccionarEspecialista(e)"
+          class="btn btn-lg btn-primary px-5"
+          [disabled]="formulario.invalid"
+          (click)="enviarTurno()"
         >
-          <img
-            [src]="e.imagenPerfil || 'assets/default-user.png'"
-            alt="Especialista"
-            class="rounded-circle mb-2"
-            width="60"
-            height="60"
-          />
-          <div>{{ e.nombre }} {{ e.apellido }}</div>
+          <i class="bi bi-check-circle me-2"></i>
+          Confirmar Turno
         </button>
       </div>
     </div>
-
-    <!-- Seleccionar Especialidad del especialista -->
-    <div class="mb-3" *ngIf="especialidadesDelEspecialista.length > 0">
-      <label class="form-label fw-semibold">Seleccionar Especialidad</label>
-      <div class="d-flex flex-wrap gap-2">
-        <button
-          type="button"
-          class="btn"
-          *ngFor="let esp of especialidadesDelEspecialista"
-          [ngClass]="{
-            'btn-success text-white': formulario.value.especialidad === esp,
-            'btn-outline-success': formulario.value.especialidad !== esp
-          }"
-          (click)="seleccionarEspecialidad(esp)"
-        >
-          <img
-            [src]="getImagenEspecialidad(esp)"
-            alt="Especialidad"
-            width="50"
-            height="50"
-            class="mb-1"
-          />
-          <div>{{ esp }}</div>
-        </button>
-      </div>
-    </div>
-
-    <!-- Seleccionar Día -->
-    <div class="mb-4" *ngIf="diasDisponibles.length > 0">
-      <label class="form-label fw-semibold">Seleccionar Día</label>
-      <div class="d-flex flex-wrap gap-2">
-        <button
-          type="button"
-          class="btn btn-square"
-          *ngFor="let d of diasDisponibles"
-          [ngClass]="{
-            'btn-primary text-white': formulario.value.dia === d.fecha,
-            'btn-outline-primary': formulario.value.dia !== d.fecha
-          }"
-          (click)="formulario.patchValue({ dia: d.fecha })"
-        >
-          {{ d.fecha }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Seleccionar Horario -->
-    <div class="mb-4" *ngIf="horariosDisponibles.length > 0">
-      <label class="form-label fw-semibold">Seleccionar Horario</label>
-      <div class="d-flex flex-wrap gap-2">
-        <button
-          type="button"
-          class="btn btn-rect-rounded"
-          *ngFor="let h of horariosDisponibles"
-          [ngClass]="{
-            'btn-success text-white': formulario.value.horario === h,
-            'btn-outline-success': formulario.value.horario !== h
-          }"
-          (click)="formulario.patchValue({ horario: h })"
-        >
-          {{ h }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Seleccionar Paciente (solo admin) -->
-    <div class="mb-3" *ngIf="esAdmin">
-      <label class="form-label fw-semibold">Seleccionar Paciente</label>
-      <select class="form-select" formControlName="paciente">
-        <option value="">Seleccionar paciente</option>
-        <option *ngFor="let p of pacientes" [value]="p.id">
-          {{ p.nombre }} {{ p.apellido }}
-        </option>
-      </select>
-    </div>
-
-    <!-- Botón Confirmar -->
-    <div class="text-center">
-      <button
-        type="button"
-        class="btn btn-lg btn-primary px-5"
-        [disabled]="formulario.invalid"
-        (click)="enviarTurno()"
-      >
-        <i class="bi bi-check-circle me-2"></i>
-        Confirmar Turno
-      </button>
-    </div>
-  </div>
+  </form>
 </div>

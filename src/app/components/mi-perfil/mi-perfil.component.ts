@@ -10,6 +10,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/es';
 import { ToastrService } from 'ngx-toastr';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import { Admin } from '../../class/admin';
 dayjs.extend(isSameOrBefore);
 
 export interface HorarioPorDia {
@@ -29,7 +30,6 @@ export interface HorarioPorDia {
 export class MiPerfilComponent {
   usuarioActual: Usuario | null = null;
   diasSemana: string[] = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
-  
 
   horarios: {
     [dia: string]: {
@@ -206,6 +206,9 @@ export class MiPerfilComponent {
 
   isEspecialista(usuario: Usuario | null): usuario is Especialista {
     return !!usuario && usuario.rol === 'especialista';
+  }
+  isAdministrador(usuario: Usuario | null): usuario is Admin {
+    return !!usuario && usuario.rol === 'administrador';
   }
 
   get especialista(): Especialista | null {
