@@ -432,4 +432,71 @@ export class UsuariosService {
     }
     return data?.diagnostico ?? null;
   }
+
+  async enviarEncuesta(turnoId: string, encuesta: string[]) {
+    const { error } = await this.supabase.client
+      .from('turnos')
+      .update({ encuesta: encuesta, encuesta_completada: true })
+      .eq('id', turnoId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async enviarCalificacion(turnoId: string, calificacion: number) {
+    const { error } = await this.supabase.client
+      .from('turnos')
+      .update({ calificacion: calificacion })
+      .eq('id', turnoId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async obtenerTodosLosEspecialistas() {
+    const { data, error } = await this.supabase.client
+      .from('usuarios')
+      .select('*')
+      .eq('rol', 'especialista');
+
+    if (error) {
+      throw new Error('Error al obtener especialistas: ' + error.message);
+    }
+
+    return data;
+  }
+
+  async obtenerEspecialidadesDelEspecialista(espeId: string) {
+    const { data, error } = await this.supabase.client
+      .from('usuarios')
+      .select('especialidades')
+      .eq('rol', 'especialidad');
+
+    if (error) {
+      throw new Error('Error al obtener especialidades: ' + error.message);
+    }
+  }
+
+  private async subirImagenEspecialidades(file: File, userId: string): Promise<string> {
+    const filePath = `especialidades/${userId}-${file.name}`;
+
+    const { error: uploadError } = await this.supabase.client.storage
+      .from('perfiles')
+      .upload(filePath, file, {
+        upsert: true,
+        contentType: file.type,
+      });
+
+    if (uploadError) {
+      throw new Error('Error al subir la imagen: ' + uploadError.message);
+    }
+
+    const { data } = this.supabase.client.storage
+      .from('perfiles')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  }
 }

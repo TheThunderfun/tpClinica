@@ -85,6 +85,7 @@
             <button
               *ngIf="puedeCompletarEncuesta(turno)"
               class="btn btn-sm btn-outline-warning me-1 mb-1"
+              (click)="abrirEncuesta(turno)"
             >
               Encuesta
             </button>
@@ -92,6 +93,7 @@
             <button
               *ngIf="puedeCalificar(turno)"
               class="btn btn-sm btn-outline-success me-1 mb-1"
+              (click)="abrirModalCalificacion(turno)"
             >
               Calificar
             </button>
@@ -232,6 +234,92 @@
           >
             Cancelar
           </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<div
+  class="modal fade"
+  id="modalEncuesta"
+  tabindex="-1"
+  aria-labelledby="modalEncuestaLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form (ngSubmit)="enviarEncuesta()">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalEncuestaLabel">
+            Encuesta de atención
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div
+            class="mb-3"
+            *ngFor="let pregunta of preguntasEncuesta; let i = index"
+          >
+            <label class="form-label">{{ pregunta }}</label>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="respuestasEncuesta[i]"
+              name="respuesta{{ i }}"
+              required
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Enviar encuesta</button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalCalificar" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <form (ngSubmit)="enviarCalificacion()">
+        <div class="modal-header">
+          <h5 class="modal-title">Calificar atención</h5>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+          ></button>
+        </div>
+        <div class="modal-body text-center">
+          <p>¿Qué puntaje le das al especialista?</p>
+          <div class="mb-2">
+            <ng-container *ngFor="let star of [1, 2, 3, 4, 5]">
+              <i
+                class="bi"
+                [ngClass]="{
+                  'bi-star-fill text-warning': calificacion >= star,
+                  'bi-star text-secondary': calificacion < star
+                }"
+                style="font-size: 1.5rem; cursor: pointer"
+                (click)="calificacion = star"
+              ></i>
+            </ng-container>
+          </div>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="submit" class="btn btn-success">Enviar</button>
         </div>
       </form>
     </div>

@@ -35,6 +35,8 @@ export class SacarTurnoComponent implements OnInit {
   usuarioActual: any;
   esAdmin: boolean = false;
   pacientes: any[] = [];
+  profesionales: any[] = [];
+  especialidadesDelEspecialista: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -44,6 +46,7 @@ export class SacarTurnoComponent implements OnInit {
     private authService: AuthService
   ) {
     this.formulario = this.fb.group({
+      //profesional: ['', Validators.required],
       especialidad: ['', Validators.required],
       especialista: ['', Validators.required],
       dia: ['', Validators.required],
@@ -53,6 +56,7 @@ export class SacarTurnoComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.cargarEspecialistas();
     this.cargarEspecialidades();
 
     this.formulario.get('especialidad')?.valueChanges.subscribe((esp) => {
@@ -63,18 +67,14 @@ export class SacarTurnoComponent implements OnInit {
         return;
       }
 
-      this.cargarEspecialistas(esp.trim());
-      this.formulario.patchValue({ especialista: '', dia: '', horario: '' });
+      // Validar si el especialista seleccionado tiene esta especialidad
+      const especialistaActual = this.formulario.get('especialista')?.value;
+      const especialistaValido = this.profesionales.some(
+        (e) => e.id === especialistaActual && e.especialidad?.includes(esp)
+      );
+
       this.diasDisponibles = [];
       this.horariosDisponibles = [];
-    });
-
-    this.formulario.get('especialista')?.valueChanges.subscribe((id) => {
-      if (id) {
-        this.generarDiasDisponibles(id);
-        this.formulario.patchValue({ dia: '', horario: '' });
-        this.horariosDisponibles = [];
-      }
     });
 
     this.formulario.get('dia')?.valueChanges.subscribe((fecha) => {
@@ -98,11 +98,11 @@ export class SacarTurnoComponent implements OnInit {
         const pacientes = await this.usuariosSv.obtenerPacientes();
         this.pacientes = pacientes;
 
-        // Validar campo paciente si es admin
+
         this.formulario.get('paciente')?.setValidators(Validators.required);
         this.formulario.get('paciente')?.updateValueAndValidity();
       } else {
-        // Si no es admin, remover validación por las dudas
+
         this.formulario.get('paciente')?.clearValidators();
         this.formulario.get('paciente')?.updateValueAndValidity();
       }
@@ -118,16 +118,6 @@ export class SacarTurnoComponent implements OnInit {
       this.especialidades = await this.especialidadesSv.obtenerEspecialidades();
     } catch (error) {
       this.toastr.error('Error al cargar especialidades');
-    }
-  }
-
-  async cargarEspecialistas(especialidad: string) {
-    try {
-      this.especialistas =
-        await this.usuariosSv.obtenerEspecialistasPorEspecialidad(especialidad);
-    } catch {
-      this.toastr.error('Error al cargar especialistas');
-      this.especialistas = [];
     }
   }
 
@@ -172,6 +162,13 @@ export class SacarTurnoComponent implements OnInit {
     const especialistaId = this.formulario.get('especialista')?.value;
     const especialidadSeleccionada =
       this.formulario.get('especialidad')?.value?.trim() ?? '';
+    console.log(
+      'ID:',
+      especialistaId,
+      'Especialidad:',
+      especialidadSeleccionada
+    );
+
     if (!especialistaId || !especialidadSeleccionada) return;
 
     const diaSemana = dayjs(fecha).format('dddd').toLowerCase();
@@ -226,6 +223,44 @@ export class SacarTurnoComponent implements OnInit {
     } catch (err) {
       this.toastr.error('Ocurrió un error al reservar el turno.');
       console.error('Error al guardar turno:', err);
+    }
+  }
+
+  async cargarEspecialistas() {
+    try {
+      this.profesionales = await this.usuariosSv.obtenerTodosLosEspecialistas();
+    } catch {
+      this.toastr.error('Error al cargar especialistas');
+      this.profesionales = [];
+    }
+  }
+
+  seleccionarEspecialista(especialista: any) {
+    this.formulario.patchValue({
+      especialista: especialista.id,
+      dia: '',
+      horario: '',
+    });
+
+    // Actualizamos las especialidades del especialista seleccionado
+    this.especialidadesDelEspecialista = especialista.especialidad || [];
+
+    this.diasDisponibles = [];
+    this.horariosDisponibles = [];
+  }
+
+  getImagenEspecialidad(nombreEspecialidad: string): string {
+    const esp = this.especialidades.find(
+      (e) => e.nombre === nombreEspecialidad
+    );
+    return esp?.imagen || 'assets/images/default-specialty.png';
+  }
+
+  async seleccionarEspecialidad(esp: string) {
+    this.formulario.patchValue({ especialidad: esp, dia: '', horario: '' });
+    const especialistaId = this.formulario.get('especialista')?.value;
+    if (especialistaId) {
+      await this.generarDiasDisponibles(especialistaId);
     }
   }
 }

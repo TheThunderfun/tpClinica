@@ -48,6 +48,9 @@ export class MisTurnosComponent implements OnInit {
   modalComentario = '';
   modalDiagnostico = '';
   modalMostrarDiagnostico = false;
+  encuestaForm!: FormGroup;
+
+  mostrarEncuesta = false;
   constructor(
     private toastr: ToastrService,
     private authSv: AuthService,
@@ -73,6 +76,11 @@ export class MisTurnosComponent implements OnInit {
       this.filtroForm.valueChanges.subscribe(() => this.aplicarFiltros());
     });
     this.cargando = false;
+    this.encuestaForm = this.fb.group({
+      pregunta1: [''],
+      pregunta2: [''],
+      pregunta3: [''],
+    });
   }
 
   async cargarTurnos() {
@@ -172,12 +180,15 @@ export class MisTurnosComponent implements OnInit {
 
   puedeCompletarEncuesta(turno: any): boolean {
     return (
-      this.rol === 'paciente' && turno.estado === 'realizado' && turno.resena
+      this.rol === 'paciente' &&
+      turno.estado === 'finalizado' &&
+      turno.reseña &&
+      turno.encuesta
     );
   }
 
   puedeCalificar(turno: any): boolean {
-    return this.rol === 'paciente' && turno.estado === 'realizado';
+    return this.rol === 'paciente' && turno.estado === 'finalizado' && turno.calificacion;
   }
 
   async cancelarTurno(turno: any) {
@@ -340,6 +351,76 @@ export class MisTurnosComponent implements OnInit {
       }
     } catch (err) {
       this.toastr.error('Error al cancelar el turno.');
+    }
+  }
+
+  modalEncuestaTurno!: any;
+  preguntasEncuesta = [
+    '¿Cómo calificarías la atención?',
+    '¿Te sentiste cómodo/a durante la consulta?',
+    '¿Recomendarías a este especialista?',
+  ];
+  respuestasEncuesta: string[] = [];
+
+  abrirEncuesta(turno: any) {
+    this.modalEncuestaTurno = turno;
+    this.respuestasEncuesta = this.preguntasEncuesta.map(() => '');
+    const modal = new Modal(document.getElementById('modalEncuesta')!);
+    modal.show();
+  }
+  abrirModalEncuesta(turno: any) {
+    this.modalEncuestaTurno = turno; // <- acá se guarda el turno actual
+    this.respuestasEncuesta = this.preguntasEncuesta.map(() => '');
+    const modal = new Modal(document.getElementById('modalEncuesta')!);
+    modal.show();
+  }
+
+  async enviarEncuesta() {
+    if (this.respuestasEncuesta.some((r) => !r.trim())) {
+      this.toastr.warning('Completá todas las respuestas.');
+      return;
+    }
+
+    try {
+      await this.usuariosSv.enviarEncuesta(
+        this.modalEncuestaTurno.id,
+        this.respuestasEncuesta
+      );
+      this.toastr.success('Encuesta enviada. ¡Gracias por tu opinión!');
+      Modal.getInstance(document.getElementById('modalEncuesta')!)?.hide();
+      await this.cargarTurnos();
+    } catch (err) {
+      this.toastr.error('Error al enviar la encuesta.');
+    }
+  }
+
+  modalCalificarTurno!: any;
+  calificacion: number = 0;
+
+  abrirModalCalificacion(turno: any) {
+    this.modalCalificarTurno = turno;
+    this.calificacion = 0;
+    const modal = new Modal(document.getElementById('modalCalificar')!);
+    modal.show();
+  }
+
+  async enviarCalificacion() {
+    if (this.calificacion < 1 || this.calificacion > 5) {
+      this.toastr.warning('Seleccioná una calificación entre 1 y 5.');
+      return;
+    }
+
+    try {
+      await this.usuariosSv.enviarCalificacion(
+        this.modalCalificarTurno.id,
+        this.calificacion
+      );
+      this.toastr.success('¡Gracias por calificar!');
+      Modal.getInstance(document.getElementById('modalCalificar')!)?.hide();
+      await this.cargarTurnos();
+    } catch (err) {
+      this.toastr.error('Error al enviar la calificación.');
+      console.error(err);
     }
   }
 }
