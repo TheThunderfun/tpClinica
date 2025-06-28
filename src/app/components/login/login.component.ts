@@ -5,11 +5,12 @@ import { Router } from '@angular/router';
 import { NavBarComponent } from '../nav-bar/nav-bar.component';
 import { ToastrService } from 'ngx-toastr';
 import { CommonModule } from '@angular/common';
+import { AutoFocusDirective } from '../../directives/auto-focus.directive';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, NavBarComponent, CommonModule],
+  imports: [FormsModule, NavBarComponent, CommonModule,AutoFocusDirective],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
@@ -67,8 +68,8 @@ export class LoginComponent {
     },
     {
       nombre: 'Paciente 3',
-      email: 'paciente3@mail.com',
-      password: '123456',
+      email: 'insideou@btcmod.com',
+      password: 'paciente',
       imagen: 'assets/users/p3.png',
     },
     {

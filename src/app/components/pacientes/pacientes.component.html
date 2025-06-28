@@ -1,0 +1,95 @@
+<div *ngIf="historiasClinicas.length > 0" class="container mt-5 mb-5">
+  <div class="card shadow-sm border-0 p-4">
+    <h5 class="mb-4 text-primary border-bottom pb-2">Historias Clínicas</h5>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle text-center">
+        <thead class="table-light text-center">
+          <tr>
+            <th>Fecha</th>
+            <th>Altura</th>
+            <th>Peso</th>
+            <th>Temperatura</th>
+            <th>Presión</th>
+            <th>Paciente</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let historia of historiasClinicas">
+            <td>{{ historia.fecha | date : "dd/MM/yyyy" }}</td>
+            <td>{{ historia.altura }} cm</td>
+            <td>{{ historia.peso }} kg</td>
+            <td>{{ historia.temperatura }} °C</td>
+            <td>{{ historia.presion }}</td>
+            <td>
+              {{ historia.paciente?.nombre }}
+              {{ historia.paciente?.apellido }}
+            </td>
+            <td class="text-center">
+              <button
+                class="btn btn-sm btn-outline-primary px-3 py-1"
+                (click)="verDetalles(historia)"
+              >
+                Ver más
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div
+  class="modal fade show d-block"
+  tabindex="-1"
+  style="background-color: rgba(0, 0, 0, 0.5)"
+  *ngIf="historiaSeleccionada"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-primary">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">Detalle de Historia Clínica</h5>
+        <button
+          type="button"
+          class="btn-close"
+          (click)="cerrarDetalles()"
+          aria-label="Cerrar"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>
+          <strong>Fecha:</strong>
+          {{ historiaSeleccionada.fecha | date : "dd/MM/yyyy HH:mm" }}
+        </p>
+        <p><strong>Altura:</strong> {{ historiaSeleccionada.altura }} cm</p>
+        <p><strong>Peso:</strong> {{ historiaSeleccionada.peso }} kg</p>
+        <p>
+          <strong>Temperatura:</strong>
+          {{ historiaSeleccionada.temperatura }} °C
+        </p>
+        <p><strong>Presión:</strong> {{ historiaSeleccionada.presion }}</p>
+
+        <div *ngIf="historiaSeleccionada.dinamicos?.length">
+          <p><strong>Datos adicionales:</strong></p>
+          <ul>
+            <li *ngFor="let campo of historiaSeleccionada.dinamicos">
+              <strong>{{ campo.clave }}:</strong> {{ campo.valor }}
+            </li>
+          </ul>
+        </div>
+
+        <p *ngIf="historiaSeleccionada.paciente">
+          <strong>Paciente:</strong>
+          {{ historiaSeleccionada.paciente.nombre }}
+          {{ historiaSeleccionada.paciente.apellido }}
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="cerrarDetalles()">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

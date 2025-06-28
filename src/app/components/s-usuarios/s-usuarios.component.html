@@ -1,130 +1,95 @@
 <div class="container my-5">
-  <button
-    class="btn btn-success mb-4"
-    data-bs-toggle="modal"
-    data-bs-target="#registroAdminModal"
-  >
-    <i class="bi bi-person-plus me-1"></i> Registrar Administrador
-  </button>
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+    <button
+      class="btn btn-success d-flex align-items-center gap-1 shadow-sm"
+      data-bs-toggle="modal"
+      data-bs-target="#registroAdminModal"
+    >
+      <i class="bi bi-person-plus"></i> Registrar Administrador
+    </button>
+
+    <button
+      class="btn btn-primary d-flex align-items-center gap-1 shadow-sm"
+      (click)="exportarUsuariosAExcel()"
+    >
+      <i class="bi bi-download"></i> Descargar Usuarios
+    </button>
+  </div>
+
   <h2
-    class="mb-4 text-primary fw-semibold"
+    class="mb-4 text-primary fw-bold"
     style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
   >
     Sección Usuarios
   </h2>
 
-  <table
-    class="table table-hover align-middle"
-    style="
-      border: 1px solid #d1d7dc;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      background-color: #fff;
-    "
-  >
-    <thead style="background-color: #f5f8fa; border-bottom: 2px solid #007bff">
-      <tr>
-        <th
-          scope="col"
-          class="text-center text-secondary"
-          style="font-weight: 600"
-        >
-          Nombre
-        </th>
-        <th
-          scope="col"
-          class="text-center text-secondary"
-          style="font-weight: 600"
-        >
-          Apellido
-        </th>
-        <th
-          scope="col"
-          class="text-center text-secondary"
-          style="font-weight: 600"
-        >
-          Email
-        </th>
-        <th
-          scope="col"
-          class="text-center text-secondary"
-          style="font-weight: 600"
-        >
-          Rol
-        </th>
-        <th
-          scope="col"
-          class="text-center text-secondary"
-          style="font-weight: 600"
-        >
-          Autorizado
-        </th>
-        <th
-          scope="col"
-          class="text-center text-secondary"
-          style="font-weight: 600"
-        >
-          Acciones
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr
-        *ngFor="let usuario of usuarios"
-        [class.bg-light]="usuario.rol === 'paciente'"
+  <div class="table-responsive shadow-sm rounded" style="border: 1px solid #d1d7dc;">
+    <table class="table table-hover align-middle mb-0 bg-white rounded">
+      <thead
+        class="bg-primary text-white"
+        style="border-radius: 0.5rem 0.5rem 0 0;"
       >
-        <td class="text-center text-dark" style="font-weight: 500">
-          {{ usuario.nombre }}
-        </td>
-        <td class="text-center text-dark" style="font-weight: 500">
-          {{ usuario.apellido }}
-        </td>
-        <td
-          class="text-center text-truncate"
-          style="
-            max-width: 220px;
-            font-family: 'Roboto Mono', monospace;
-            color: #555;
-          "
+        <tr>
+          <th class="text-center" style="font-weight: 600;">Nombre</th>
+          <th class="text-center" style="font-weight: 600;">Apellido</th>
+          <th class="text-center" style="font-weight: 600; max-width: 220px;">
+            Email
+          </th>
+          <th class="text-center" style="font-weight: 600;">Rol</th>
+          <th class="text-center" style="font-weight: 600;">Autorizado</th>
+          <th class="text-center" style="font-weight: 600;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let usuario of usuarios"
+          [class.bg-light]="usuario.rol === 'paciente'"
+          style="cursor: default;"
         >
-          {{ usuario.email }}
-        </td>
-        <td class="text-center">
-          {{ usuario.rol | rolVisual }}
-        </td>
-        <td class="text-center">
-          <ng-container *ngIf="usuario.rol === 'especialista'; else noAplica">
-            <span [innerHTML]="usuario.autorizado | autorizacionVisual"></span>
-          </ng-container>
-          <ng-template #noAplica>--</ng-template>
-        </td>
-        <td class="text-center">
-          <button
-            *ngIf="usuario.rol === 'especialista'"
-            (click)="cambiarAutorizacion(usuario)"
-            [ngClass]="{
-              'btn btn-outline-success btn-sm': !usuario.autorizado,
-              'btn btn-outline-danger btn-sm': usuario.autorizado
-            }"
-            title="{{ usuario.autorizado ? 'Deshabilitar' : 'Habilitar' }}"
-            style="min-width: 110px; font-weight: 600"
+          <td class="text-center fw-medium text-dark">{{ usuario.nombre }}</td>
+          <td class="text-center fw-medium text-dark">{{ usuario.apellido }}</td>
+          <td
+            class="text-center text-truncate"
+            style="max-width: 220px; font-family: 'Roboto Mono', monospace; color: #555;"
+            [attr.title]="usuario.email"
           >
-            <i
-              class="bi"
+            {{ usuario.email }}
+          </td>
+          <td class="text-center">{{ usuario.rol | rolVisual }}</td>
+          <td class="text-center">
+            <ng-container *ngIf="usuario.rol === 'especialista'; else noAplica">
+              <span [innerHTML]="usuario.autorizado | autorizacionVisual"></span>
+            </ng-container>
+            <ng-template #noAplica>--</ng-template>
+          </td>
+          <td class="text-center">
+            <button
+              *ngIf="usuario.rol === 'especialista'"
+              (click)="cambiarAutorizacion(usuario)"
               [ngClass]="{
-                'bi-toggle-on': usuario.autorizado,
-                'bi-toggle-off': !usuario.autorizado
+                'btn btn-outline-success btn-sm': !usuario.autorizado,
+                'btn btn-outline-danger btn-sm': usuario.autorizado
               }"
-              style="font-size: 1.25rem; margin-right: 6px"
-            ></i>
-            {{ usuario.autorizado | autorizacionTexto }}
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+              title="{{ usuario.autorizado ? 'Deshabilitar' : 'Habilitar' }}"
+              style="min-width: 110px; font-weight: 600;"
+            >
+              <i
+                class="bi"
+                [ngClass]="{
+                  'bi-toggle-on': usuario.autorizado,
+                  'bi-toggle-off': !usuario.autorizado
+                }"
+                style="font-size: 1.25rem; margin-right: 6px;"
+              ></i>
+              {{ usuario.autorizado | autorizacionTexto }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
+  <!-- Modal Registrar Administrador -->
   <div
     class="modal fade"
     id="registroAdminModal"
@@ -132,18 +97,18 @@
     aria-labelledby="registroAdminModalLabel"
     aria-hidden="true"
   >
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content rounded-4 shadow">
         <form [formGroup]="formAdmin" (ngSubmit)="registrarAdministrador()">
-          <div class="modal-header">
+          <div class="modal-header bg-primary text-white rounded-top">
             <h5 class="modal-title" id="registroAdminModalLabel">
               Registrar Administrador
             </h5>
             <button
               type="button"
-              class="btn-close"
+              class="btn-close btn-close-white"
               data-bs-dismiss="modal"
-              aria-label="Close"
+              aria-label="Cerrar"
             ></button>
           </div>
 
@@ -151,15 +116,15 @@
             <div class="row g-3">
               <!-- Nombre -->
               <div class="col-md-6">
-                <label>Nombre</label>
-                <input formControlName="nombre" class="form-control" />
-                <div
-                  class="text-danger small"
-                  *ngIf="
-                    formAdmin.get('nombre')?.touched &&
-                    formAdmin.get('nombre')?.invalid
+                <label class="form-label fw-semibold">Nombre</label>
+                <input
+                  formControlName="nombre"
+                  class="form-control"
+                  [class.is-invalid]="
+                    formAdmin.get('nombre')?.touched && formAdmin.get('nombre')?.invalid
                   "
-                >
+                />
+                <div class="invalid-feedback">
                   <div *ngIf="formAdmin.get('nombre')?.errors?.['required']">
                     El nombre es obligatorio.
                   </div>
@@ -168,15 +133,15 @@
 
               <!-- Apellido -->
               <div class="col-md-6">
-                <label>Apellido</label>
-                <input formControlName="apellido" class="form-control" />
-                <div
-                  class="text-danger small"
-                  *ngIf="
-                    formAdmin.get('apellido')?.touched &&
-                    formAdmin.get('apellido')?.invalid
+                <label class="form-label fw-semibold">Apellido</label>
+                <input
+                  formControlName="apellido"
+                  class="form-control"
+                  [class.is-invalid]="
+                    formAdmin.get('apellido')?.touched && formAdmin.get('apellido')?.invalid
                   "
-                >
+                />
+                <div class="invalid-feedback">
                   <div *ngIf="formAdmin.get('apellido')?.errors?.['required']">
                     El apellido es obligatorio.
                   </div>
@@ -185,19 +150,16 @@
 
               <!-- Edad -->
               <div class="col-md-4">
-                <label>Edad</label>
+                <label class="form-label fw-semibold">Edad</label>
                 <input
                   type="number"
                   formControlName="edad"
                   class="form-control"
-                />
-                <div
-                  class="text-danger small"
-                  *ngIf="
-                    formAdmin.get('edad')?.touched &&
-                    formAdmin.get('edad')?.invalid
+                  [class.is-invalid]="
+                    formAdmin.get('edad')?.touched && formAdmin.get('edad')?.invalid
                   "
-                >
+                />
+                <div class="invalid-feedback">
                   <div *ngIf="formAdmin.get('edad')?.errors?.['required']">
                     La edad es obligatoria.
                   </div>
@@ -212,20 +174,21 @@
 
               <!-- DNI -->
               <div class="col-md-4">
-                <label>DNI</label>
-                <input type="text" formControlName="dni" class="form-control" />
-                <div
-                  class="text-danger small"
-                  *ngIf="
-                    formAdmin.get('dni')?.touched &&
-                    formAdmin.get('dni')?.invalid
+                <label class="form-label fw-semibold">DNI</label>
+                <input
+                  type="text"
+                  formControlName="dni"
+                  class="form-control"
+                  [class.is-invalid]="
+                    formAdmin.get('dni')?.touched && formAdmin.get('dni')?.invalid
                   "
-                >
+                />
+                <div class="invalid-feedback">
                   <div *ngIf="formAdmin.get('dni')?.errors?.['required']">
                     El DNI es obligatorio.
                   </div>
                   <div *ngIf="formAdmin.get('dni')?.errors?.['minlength']">
-                    El DNI debe tener al menos 8 caracteres.
+                    El DNI debe tener 8 caracteres.
                   </div>
                   <div *ngIf="formAdmin.get('dni')?.errors?.['maxlength']">
                     El DNI no puede tener más de 8 caracteres.
@@ -235,19 +198,16 @@
 
               <!-- Email -->
               <div class="col-md-4">
-                <label>Email</label>
+                <label class="form-label fw-semibold">Email</label>
                 <input
                   type="email"
                   formControlName="email"
                   class="form-control"
-                />
-                <div
-                  class="text-danger small"
-                  *ngIf="
-                    formAdmin.get('email')?.touched &&
-                    formAdmin.get('email')?.invalid
+                  [class.is-invalid]="
+                    formAdmin.get('email')?.touched && formAdmin.get('email')?.invalid
                   "
-                >
+                />
+                <div class="invalid-feedback">
                   <div *ngIf="formAdmin.get('email')?.errors?.['required']">
                     El email es obligatorio.
                   </div>
@@ -259,19 +219,17 @@
 
               <!-- Contraseña -->
               <div class="col-md-6">
-                <label>Contraseña</label>
+                <label class="form-label fw-semibold">Contraseña</label>
                 <input
                   type="password"
                   formControlName="password"
                   class="form-control"
-                />
-                <div
-                  class="text-danger small"
-                  *ngIf="
+                  [class.is-invalid]="
                     formAdmin.get('password')?.touched &&
                     formAdmin.get('password')?.invalid
                   "
-                >
+                />
+                <div class="invalid-feedback">
                   <div *ngIf="formAdmin.get('password')?.errors?.['required']">
                     La contraseña es obligatoria.
                   </div>
@@ -285,7 +243,7 @@
 
               <!-- Imagen -->
               <div class="col-md-6">
-                <label>Imagen de perfil</label>
+                <label class="form-label fw-semibold">Imagen de perfil</label>
                 <input
                   type="file"
                   (change)="onFileSelected($event)"
@@ -297,7 +255,7 @@
 
           <div class="modal-footer">
             <button
-              class="btn btn-primary"
+              class="btn btn-primary px-4 py-2 fw-semibold"
               type="submit"
               [disabled]="formAdmin.invalid"
             >
@@ -305,6 +263,103 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Historias Clínicas -->
+<div *ngIf="historiasClinicas.length > 0" class="container mt-5 mb-5">
+  <div class="card shadow-sm border-0 p-4 rounded-4">
+    <h5 class="mb-4 text-primary border-bottom pb-2 fw-semibold">Historias Clínicas</h5>
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle text-center rounded-3">
+        <thead class="table-light text-center rounded-3">
+          <tr>
+            <th>Fecha</th>
+            <th>Altura</th>
+            <th>Peso</th>
+            <th>Temperatura</th>
+            <th>Presión</th>
+            <th>Paciente</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let historia of historiasClinicas" style="cursor: pointer;">
+            <td>{{ historia.fecha | date : "dd/MM/yyyy" }}</td>
+            <td>{{ historia.altura }} cm</td>
+            <td>{{ historia.peso }} kg</td>
+            <td>{{ historia.temperatura }} °C</td>
+            <td>{{ historia.presion }}</td>
+            <td>
+              {{ historia.paciente?.nombre }} {{ historia.paciente?.apellido }}
+            </td>
+            <td class="text-center">
+              <button
+                class="btn btn-sm btn-outline-primary px-3 py-1"
+                (click)="verDetalles(historia)"
+              >
+                Ver más
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Detalle Historia Clínica -->
+<div
+  class="modal fade show d-block"
+  tabindex="-1"
+  style="background-color: rgba(0, 0, 0, 0.5)"
+  *ngIf="historiaSeleccionada"
+>
+  <div class="modal-dialog modal-lg modal-dialog-centered rounded-4">
+    <div class="modal-content border-primary shadow-sm rounded-4">
+      <div class="modal-header bg-primary text-white rounded-top">
+        <h5 class="modal-title">Detalle de Historia Clínica</h5>
+        <button
+          type="button"
+          class="btn-close btn-close-white"
+          (click)="cerrarDetalles()"
+          aria-label="Cerrar"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <p>
+          <strong>Fecha:</strong> {{ historiaSeleccionada.fecha | date : "dd/MM/yyyy HH:mm" }}
+        </p>
+        <p><strong>Altura:</strong> {{ historiaSeleccionada.altura }} cm</p>
+        <p><strong>Peso:</strong> {{ historiaSeleccionada.peso }} kg</p>
+        <p><strong>Temperatura:</strong> {{ historiaSeleccionada.temperatura }} °C</p>
+        <p><strong>Presión:</strong> {{ historiaSeleccionada.presion }}</p>
+
+        <div *ngIf="historiaSeleccionada.dinamicos?.length">
+          <p><strong>Datos adicionales:</strong></p>
+          <ul>
+            <li *ngFor="let campo of historiaSeleccionada.dinamicos">
+              <strong>{{ campo.clave }}:</strong> {{ campo.valor }}
+            </li>
+          </ul>
+        </div>
+
+        <p *ngIf="historiaSeleccionada.paciente">
+          <strong>Paciente:</strong> {{ historiaSeleccionada.paciente.nombre }}
+          {{ historiaSeleccionada.paciente.apellido }}
+        </p>
+        <p *ngIf="historiaSeleccionada.especialista">
+          <strong>Especialista:</strong> {{ historiaSeleccionada.especialista.nombre }}
+          {{ historiaSeleccionada.especialista.apellido }}
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary px-4 py-2 fw-semibold" (click)="cerrarDetalles()">
+          Cerrar
+        </button>
       </div>
     </div>
   </div>

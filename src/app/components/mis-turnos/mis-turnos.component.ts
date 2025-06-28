@@ -13,6 +13,8 @@ import { Usuario } from '../../class/usuario';
 import { Paciente } from '../../class/paciente';
 import { Especialista } from '../../class/especialista';
 import { Modal } from 'bootstrap';
+import { ResaltarEstadoDirective } from '../../directives/resaltar-estado.directive';
+import { AutoFocusDirective } from '../../directives/auto-focus.directive';
 
 interface Turno {
   id: string;
@@ -29,7 +31,13 @@ interface Turno {
 @Component({
   selector: 'app-mis-turnos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    ResaltarEstadoDirective,
+    AutoFocusDirective,
+  ],
   templateUrl: './mis-turnos.component.html',
   styleUrl: './mis-turnos.component.scss',
 })
@@ -41,6 +49,7 @@ export class MisTurnosComponent implements OnInit {
   filtroForm: FormGroup;
   cargando = false;
 
+  modalHistoriaClinica = '';
   modalTurno!: any;
   modalAccion: 'cancelar' | 'rechazar' | 'finalizar' = 'cancelar';
   modalTitulo = '';
@@ -49,6 +58,17 @@ export class MisTurnosComponent implements OnInit {
   modalDiagnostico = '';
   modalMostrarDiagnostico = false;
   encuestaForm!: FormGroup;
+  historiaClinica = {
+    altura: '',
+    peso: '',
+    temperatura: '',
+    presion: '',
+    dinamicos: [
+      { clave: '', valor: '' },
+      { clave: '', valor: '' },
+      { clave: '', valor: '' },
+    ],
+  };
 
   mostrarEncuesta = false;
   constructor(
@@ -58,8 +78,7 @@ export class MisTurnosComponent implements OnInit {
     private fb: FormBuilder
   ) {
     this.filtroForm = this.fb.group({
-      especialidad: [''],
-      filtroTexto: [''], // especialista o paciente según el rol
+      filtroGeneral: [''],
     });
   }
 
@@ -88,7 +107,6 @@ export class MisTurnosComponent implements OnInit {
     try {
       const todos = await this.usuariosSv.obtenerTodosLosTurnos();
 
-      // Convertimos paciente y especialista de arrays a objetos (o null si no hay)
       const turnosConvertidos = todos.map((t: any) => ({
         ...t,
         paciente: Array.isArray(t.paciente)
@@ -97,14 +115,20 @@ export class MisTurnosComponent implements OnInit {
         especialista: Array.isArray(t.especialista)
           ? t.especialista[0] ?? null
           : t.especialista,
+        historiaClinica: null, // Por ahora null, la vamos a llenar abajo
       }));
 
-      // Ahora filtramos según el rol y usuario actual
+      // Traer historia clínica por turno
+      for (const turno of turnosConvertidos) {
+        const hc = await this.usuariosSv.obtenerHistoriaClinicaPorTurno(
+          turno.id
+        );
+        turno.historiaClinica = hc ?? null;
+        console.log(turno.historiaClinica);
+      }
+
       this.turnos = turnosConvertidos.filter((t) => {
         if (this.rol === 'paciente') {
-          //console.log(t.paciente?.[0]?.id === this.usuario.id);
-          //console.log('user', this.usuario.id);
-          //console.log('paciente', t.paciente?.id);
           return t.paciente?.id === this.usuario.id;
         } else if (this.rol === 'especialista') {
           return t.especialista?.id === this.usuario.id;
@@ -122,21 +146,50 @@ export class MisTurnosComponent implements OnInit {
   }
 
   aplicarFiltros() {
-    const especialidad = this.filtroForm.value.especialidad.toLowerCase();
-    const texto = this.filtroForm.value.filtroTexto.toLowerCase();
+    const filtro = this.filtroForm.value.filtroGeneral.toLowerCase();
 
     this.turnosFiltrados = this.turnos.filter((t) => {
-      const espMatch = t.especialidad.toLowerCase().includes(especialidad);
-      const textoMatch =
-        this.rol === 'paciente'
-          ? `${t.especialista.nombre} ${t.especialista.apellido}`
-              .toLowerCase()
-              .includes(texto)
-          : `${t.paciente.nombre} ${t.paciente.apellido}`
-              .toLowerCase()
-              .includes(texto);
+      if (!filtro) return true;
 
-      return espMatch && textoMatch;
+      // Datos básicos del turno
+      const especialidad = t.especialidad?.toLowerCase() ?? '';
+      const especialistaNombre = `${t.especialista?.nombre ?? ''} ${
+        t.especialista?.apellido ?? ''
+      }`.toLowerCase();
+      const pacienteNombre = `${t.paciente?.nombre ?? ''} ${
+        t.paciente?.apellido ?? ''
+      }`.toLowerCase();
+      const fecha = this.formatDateISOToDDMMYYYY(t.fecha_turno).toLowerCase();
+      console.log('la fecha es', fecha);
+      const hora = t.hora_turno?.toLowerCase() ?? '';
+      const estado = t.estado?.toLowerCase() ?? '';
+
+      // Datos historia clínica
+      let hcTexto = '';
+      if (t.historiaClinica) {
+        const hc = t.historiaClinica;
+        hcTexto += (hc.altura ?? '') + ' ';
+        hcTexto += (hc.peso ?? '') + ' ';
+        hcTexto += (hc.temperatura ?? '') + ' ';
+        hcTexto += (hc.presion ?? '') + ' ';
+        if (hc.dinamicos && Array.isArray(hc.dinamicos)) {
+          for (const d of hc.dinamicos) {
+            hcTexto += (d.clave ?? '') + ' ' + (d.valor ?? '') + ' ';
+          }
+        }
+        hcTexto = hcTexto.toLowerCase();
+      }
+
+      // Buscar filtro en cualquiera de los campos
+      return (
+        especialidad.includes(filtro) ||
+        especialistaNombre.includes(filtro) ||
+        pacienteNombre.includes(filtro) ||
+        fecha.includes(filtro) ||
+        hora.includes(filtro) ||
+        estado.includes(filtro) ||
+        hcTexto.includes(filtro)
+      );
     });
   }
 
@@ -170,12 +223,11 @@ export class MisTurnosComponent implements OnInit {
   }
 
   puedeVerResena(turno: any): boolean {
-    //console.log(turno);
     return !!turno.reseña;
   }
 
   verCancelacion(turno: any): boolean {
-    return turno.estado.toLowerCase() === 'cancelado';
+    return turno.estado?.trim().toLowerCase() === 'cancelado';
   }
 
   puedeCompletarEncuesta(turno: any): boolean {
@@ -188,7 +240,11 @@ export class MisTurnosComponent implements OnInit {
   }
 
   puedeCalificar(turno: any): boolean {
-    return this.rol === 'paciente' && turno.estado === 'finalizado' && turno.calificacion;
+    return (
+      this.rol === 'paciente' &&
+      turno.estado === 'finalizado' &&
+      turno.calificacion
+    );
   }
 
   async cancelarTurno(turno: any) {
@@ -229,6 +285,13 @@ export class MisTurnosComponent implements OnInit {
     } catch (err) {
       this.toastr.error('Error al visualizar la cancelacion del turno .');
     }
+  }
+
+  puedeCargarHistoriaClinica(turno: any) {
+    return (
+      turno.estado?.trim().toLowerCase() === 'finalizado' &&
+      this.rol === 'especialista'
+    );
   }
 
   async finalizarTurno(turno: any) {
@@ -283,7 +346,21 @@ export class MisTurnosComponent implements OnInit {
     this.modalAccion = accion;
     this.modalComentario = '';
     this.modalDiagnostico = '';
+    this.modalHistoriaClinica = '';
     this.modalMostrarDiagnostico = accion === 'finalizar';
+    if (accion === 'finalizar') {
+      this.historiaClinica = {
+        altura: '',
+        peso: '',
+        temperatura: '',
+        presion: '',
+        dinamicos: [
+          { clave: '', valor: '' },
+          { clave: '', valor: '' },
+          { clave: '', valor: '' },
+        ],
+      };
+    }
 
     switch (accion) {
       case 'cancelar':
@@ -327,10 +404,43 @@ export class MisTurnosComponent implements OnInit {
         );
         this.toastr.success('Turno rechazado.');
       } else if (this.modalAccion === 'finalizar') {
+        const hc = this.historiaClinica;
+
+        if (!hc.altura || !hc.peso || !hc.temperatura || !hc.presion) {
+          this.toastr.warning(
+            'Debe completar todos los datos fijos de la historia clínica.'
+          );
+          return;
+        }
+
+        const dinamicosValidos = hc.dinamicos.filter(
+          (d) => d.clave.trim() && d.valor.trim()
+        );
+
+        // Armar objeto historia clínica
+        const historiaClinicaCompleta = {
+          altura: hc.altura,
+          peso: hc.peso,
+          temperatura: hc.temperatura,
+          presion: hc.presion,
+          dinamicos: dinamicosValidos,
+        };
+
         await this.usuariosSv.finalizarTurno(
           this.modalTurno.id,
           this.modalComentario,
           this.modalDiagnostico
+        );
+        const usuarioId = this.usuario?.id;
+        if (!usuarioId) {
+          this.toastr.error('Usuario no definido');
+          return;
+        }
+        await this.usuariosSv.cargarHistoriaClinica(
+          this.modalTurno.id,
+          historiaClinicaCompleta,
+          this.modalTurno.paciente.id,
+          usuarioId
         );
         this.toastr.success('Turno finalizado.');
       }
@@ -422,5 +532,15 @@ export class MisTurnosComponent implements OnInit {
       this.toastr.error('Error al enviar la calificación.');
       console.error(err);
     }
+  }
+  formatDateISOToDDMMYYYY(fechaISO: string): string {
+    if (!fechaISO) return '';
+
+    // Tomar solo la parte YYYY-MM-DD
+    const fechaSolo = fechaISO.substring(0, 10); // "2025-06-28"
+
+    const [year, month, day] = fechaSolo.split('-');
+
+    return `${day}/${month}/${year}`;
   }
 }

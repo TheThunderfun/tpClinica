@@ -20,6 +20,7 @@ import { Usuario } from '../../class/usuario';
 import { trigger, transition, style, animate } from '@angular/animations';
 import { CaptchaComponent } from '../captcha/captcha.component';
 import { ToastrService } from 'ngx-toastr';
+import { SoloNumerosDirective } from '../../directives/solo-numeros.directive';
 
 @Component({
   selector: 'app-registro',
@@ -31,6 +32,7 @@ import { ToastrService } from 'ngx-toastr';
     FormsModule,
     ReactiveFormsModule,
     CaptchaComponent,
+    SoloNumerosDirective, // Assuming this directive is defined in the same directory
   ],
   animations: [
     trigger('fadeIn', [

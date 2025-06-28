@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { SupabaseClient } from '@supabase/supabase-js';
 import { Usuario } from '../../class/usuario';
 import { ToastrService } from 'ngx-toastr';
 import { Especialista } from '../../class/especialista';
@@ -19,6 +18,8 @@ import { NavBarComponent } from '../nav-bar/nav-bar.component';
 import { UsuariosService } from '../../services/usuarios.service';
 import { Admin } from '../../class/admin';
 import * as bootstrap from 'bootstrap';
+import * as XLSX from 'xlsx';
+import * as FileSaver from 'file-saver';
 
 @Component({
   selector: 'app-s-usuarios',
@@ -40,6 +41,9 @@ export class SUsuariosComponent implements OnInit {
   imagenAdmin: File | null = null;
   usuarios: any[] = [];
   nuevoUsuario!: any;
+  historiasClinicas: any[] = [];
+  historiaSeleccionada: any = null;
+  mostrarTabla: boolean = false;
 
   constructor(
     private supabase: SupabaseService,
@@ -62,6 +66,7 @@ export class SUsuariosComponent implements OnInit {
 
   ngOnInit(): void {
     this.obtenerUsuarios();
+    this.obtenerHistoriasClinicas();
   }
 
   onFileSelected(event: any) {
@@ -106,7 +111,6 @@ export class SUsuariosComponent implements OnInit {
       this.formAdmin.value;
 
     try {
-      // Registrar en Auth de Supabase
       const { data, error } = await this.supabase.auth.signUp({
         email,
         password,
@@ -124,7 +128,7 @@ export class SUsuariosComponent implements OnInit {
         email,
         dni,
         edad,
-        '' // imagen se carga después
+        ''
       );
 
       await this.usuariosService.agregarUsuarioConImagen(
@@ -142,16 +146,79 @@ export class SUsuariosComponent implements OnInit {
           new bootstrap.Modal(modalElement);
         modal.hide();
 
-        // ⚠️ Esto remueve el backdrop por si no se elimina solo
         const backdrop = document.querySelector('.modal-backdrop');
         if (backdrop) backdrop.remove();
 
-        // ⚠️ También quitamos la clase del body si quedó
         document.body.classList.remove('modal-open');
         document.body.style.removeProperty('padding-right');
       }
     } catch (err: any) {
       this.toastr.error(err.message || 'Error al registrar');
     }
+  }
+
+  exportarUsuariosAExcel() {
+    const nombreArchivo = 'usuarios.xlsx';
+
+    const datos = this.usuarios.map((u) => ({
+      Nombre: u.nombre,
+      Apellido: u.apellido,
+      Email: u.email,
+      Rol: u.rol,
+      Edad: u.edad,
+      DNI: u.dni,
+      Jornada:
+        u.jornada && Array.isArray(u.jornada)
+          ? u.jornada
+              .map(
+                (j: any) =>
+                  `${j.dia} (${j.horaInicio} - ${j.horaFinal}) [${j.especialidad}]`
+              )
+              .join(', ')
+          : '',
+      Autorizado: u.autorizado ? 'Sí' : 'No',
+      ObraSocial: u.obraSocial || '',
+      Especialidades: Array.isArray(u.especialidad)
+        ? u.especialidad.join(', ')
+        : '',
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(datos);
+    console.log(
+      this.usuarios.map((u) => ({ nombre: u.nombre, jornada: u.jornada }))
+    );
+    // Creamos el libro
+    const workbook = {
+      Sheets: { Usuarios: worksheet },
+      SheetNames: ['Usuarios'],
+    };
+
+    // Convertimos el libro a un archivo binario
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: 'xlsx',
+      type: 'array',
+    });
+
+    // Guardamos el archivo
+    const blob = new Blob([excelBuffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+    });
+
+    FileSaver.saveAs(blob, nombreArchivo);
+  }
+
+  async obtenerHistoriasClinicas() {
+    this.historiasClinicas =
+      await this.usuariosService.obtenerTodasLasHistoriasClinicas();
+  }
+
+  verDetalles(historia: any) {
+    this.historiaSeleccionada = historia;
+  }
+  cerrarDetalles() {
+    this.historiaSeleccionada = null;
+  }
+  toggleTabla() {
+    this.mostrarTabla = !this.mostrarTabla;
   }
 }

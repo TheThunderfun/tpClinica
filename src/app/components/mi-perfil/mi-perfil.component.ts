@@ -40,29 +40,40 @@ export class MiPerfilComponent {
   diasSeleccionados: Set<string> = new Set();
   horarioLaboral = { horaInicio: '', horaFinal: '' };
   errorValidacion: string = '';
+  historiasClinicas: any[] = []; // Cambia el tipo según tu modelo de historia clínica
+  historiaSeleccionada: any = null;
   constructor(
     private authService: AuthService,
     private usuariosService: UsuariosService,
     private toastr: ToastrService
   ) {}
-
-  ngOnInit() {
+  async ngOnInit() {
     this.authService.usuario$.subscribe(async (usuario) => {
+      if (!usuario) return;
+
       if (usuario?.rol === 'especialista') {
         const usuarioCompleto = await this.usuariosService.obtenerUsuario(
           usuario.email
         );
         this.usuarioActual = usuarioCompleto;
-
-        if (this.isEspecialista(this.usuarioActual)) {
-          this.inicializarHorarios();
-        }
       } else {
         this.usuarioActual = usuario;
+      }
 
-        if (this.isEspecialista(this.usuarioActual)) {
-          this.inicializarHorarios();
-        }
+      // Si es paciente, cargar historia clínica
+      if (
+        this.usuarioActual &&
+        this.isPaciente(this.usuarioActual) &&
+        this.usuarioActual.id
+      ) {
+        this.historiasClinicas =
+          await this.usuariosService.mostrarHistoriaClinicaPaciente(
+            this.usuarioActual.id
+          );
+      }
+
+      if (this.isEspecialista(this.usuarioActual)) {
+        this.inicializarHorarios();
       }
     });
   }
@@ -200,8 +211,8 @@ export class MiPerfilComponent {
     this.toastr.success('Horarios guardados correctamente.');
   }
 
-  isPaciente(usuario: Usuario): usuario is Paciente {
-    return usuario.rol === 'paciente';
+  isPaciente(usuario: Usuario | null): usuario is Paciente {
+    return !!usuario && usuario.rol === 'paciente';
   }
 
   isEspecialista(usuario: Usuario | null): usuario is Especialista {
@@ -274,4 +285,12 @@ export class MiPerfilComponent {
 
     return bloques;
   }
+
+  verDetalles(historia: any) {
+    this.historiaSeleccionada = historia;
+  }
+  cerrarDetalles() {
+    this.historiaSeleccionada = null;
+  }
+  
 }

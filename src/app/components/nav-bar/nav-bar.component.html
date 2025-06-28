@@ -35,17 +35,25 @@
           >
         </li>
 
-        <li class="nav-item" *ngIf="usuario$ | async as usuario">
+        <li class="nav-item" *ngIf="(usuario$ | async)?.rol === 'paciente'">
           <a class="nav-link fw-semibold" href="/turnos/solicitarTurno"
             >Sacar Turno</a
           >
         </li>
-
+        <li class="nav-item" *ngIf="(usuario$ | async)?.rol === 'especialista'">
+          <a class="nav-link fw-semibold" href="/pacientes">Pacientes</a>
+        </li>
         <li
           class="nav-item"
           *ngIf="(usuario$ | async)?.rol === 'administrador'"
         >
           <a class="nav-link fw-semibold" href="/usuarios">Usuarios</a>
+        </li>
+               <li
+          class="nav-item"
+          *ngIf="(usuario$ | async)?.rol === 'administrador'"
+        >
+          <a class="nav-link fw-semibold" href="/estadisticas">Graficos y estadisticas</a>
         </li>
 
         <li

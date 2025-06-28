@@ -150,9 +150,10 @@ export class AuthService {
         'Tu cuenta aún no fue autorizada por un administrador.'
       );
     }
-
+    await this.logIngreso(usuarioData.id);
     this.userSubject.next(user);
     this.usuarioSubject.next(usuarioData);
+
     return user;
   }
 
@@ -189,5 +190,14 @@ export class AuthService {
 
   getUsuario(): Usuario | null {
     return this.usuarioSubject.value;
+  }
+  async logIngreso(usuarioId: string) {
+    const { error } = await this.supabase.client.from('logs_ingresos').insert({
+      usuario_id: usuarioId,
+    });
+
+    if (error) {
+      console.error('Error al guardar log de ingreso:', error);
+    }
   }
 }

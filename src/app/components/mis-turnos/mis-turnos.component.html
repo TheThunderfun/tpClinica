@@ -2,24 +2,13 @@
   <h2 class="text-center text-primary mb-4">Mis Turnos</h2>
 
   <form [formGroup]="filtroForm" class="row g-3 mb-4">
-    <div class="col-md-6">
+    <div class="col-md-12">
       <input
         type="text"
         class="form-control"
-        formControlName="especialidad"
-        placeholder="Filtrar por especialidad"
-      />
-    </div>
-    <div class="col-md-6">
-      <input
-        type="text"
-        class="form-control"
-        formControlName="filtroTexto"
-        [placeholder]="
-          rol === 'paciente'
-            ? 'Filtrar por especialista'
-            : 'Filtrar por paciente'
-        "
+        formControlName="filtroGeneral"
+        placeholder="Filtrar por cualquier dato (especialidad, especialista, paciente, altura, peso, etc.)"
+        appAutoFocus
       />
     </div>
   </form>
@@ -57,17 +46,7 @@
         <td>{{ turno.fecha_turno | date : "dd/MM/yyyy" }}</td>
         <td>{{ turno.hora_turno }}</td>
         <td>
-          <span
-            class="badge text-bg-{{
-              turno.estado === 'realizado'
-                ? 'success'
-                : turno.estado === 'cancelado'
-                ? 'danger'
-                : turno.estado === 'aceptado'
-                ? 'primary'
-                : 'secondary'
-            }}"
-          >
+          <span [appResaltarEstado]="turno.estado" class="badge">
             {{ turno.estado }}
           </span>
         </td>
@@ -113,7 +92,6 @@
             >
               Diagnostico
             </button>
-
             <button
               *ngIf="verCancelacion(turno)"
               class="btn btn-sm btn-outline-dark me-1 mb-1"
@@ -166,7 +144,7 @@
             </button>
 
             <button
-              *ngIf="!verCancelacion(turno)"
+              *ngIf="verCancelacion(turno)"
               class="btn btn-sm btn-outline-dark me-1 mb-1"
               (click)="verMotivoCancelacion(turno)"
             >
@@ -214,6 +192,73 @@
               name="diagnostico"
               required
             ></textarea>
+            <div *ngIf="modalAccion === 'finalizar'">
+              <div class="mb-2">
+                <label>Altura (cm)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="historiaClinica.altura"
+                  name="altura"
+                  required
+                />
+              </div>
+              <div class="mb-2">
+                <label>Peso (kg)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="historiaClinica.peso"
+                  name="peso"
+                  required
+                />
+              </div>
+              <div class="mb-2">
+                <label>Temperatura (°C)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="historiaClinica.temperatura"
+                  name="temperatura"
+                  required
+                />
+              </div>
+              <div class="mb-2">
+                <label>Presión (mmHg)</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  [(ngModel)]="historiaClinica.presion"
+                  name="presion"
+                  required
+                />
+              </div>
+
+              <label>Datos adicionales (máx. 3)</label>
+              <div
+                *ngFor="let item of historiaClinica.dinamicos; let i = index"
+                class="row g-2 mb-2"
+              >
+                <div class="col-6">
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Clave"
+                    [(ngModel)]="item.clave"
+                    [name]="'clave' + i"
+                  />
+                </div>
+                <div class="col-6">
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Valor"
+                    [(ngModel)]="item.valor"
+                    [name]="'valor' + i"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
           <div class="mb-3">
             <label class="form-label">{{ modalLabel }}</label>
