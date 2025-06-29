@@ -4,22 +4,26 @@
       <h4 class="mb-0">Mi Perfil</h4>
     </div>
     <div class="card-body">
-      <!-- Paciente -->
-      <div *ngIf="isPaciente(usuarioActual)" class="mt-3">
+      <!-- Datos del Paciente -->
+      <section
+        *ngIf="isPaciente(usuarioActual)"
+        class="mt-3"
+        aria-label="Datos del Paciente"
+      >
         <h5 class="mb-4 border-bottom pb-2">Datos del Paciente</h5>
         <div class="row align-items-center gy-3">
-          <!-- Imagen 1 a la izquierda -->
+          <!-- Imagen izquierda -->
           <div class="col-md-3 text-center">
             <img
               *ngIf="usuarioActual.imagenPerfil"
               [src]="usuarioActual.imagenPerfil"
-              alt="Imagen de perfil"
+              alt="Imagen de perfil del paciente"
               class="img-thumbnail border border-3 border-primary shadow-sm"
               style="max-width: 100%; height: auto; object-fit: cover"
+              loading="lazy"
             />
           </div>
-
-          <!-- Datos personales en el medio -->
+          <!-- Datos personales -->
           <div class="col-md-6 fs-6">
             <p><strong>Nombre:</strong> {{ usuarioActual.nombre }}</p>
             <p><strong>Apellido:</strong> {{ usuarioActual.apellido }}</p>
@@ -28,22 +32,26 @@
             <p><strong>Email:</strong> {{ usuarioActual.email }}</p>
             <p><strong>Obra Social:</strong> {{ usuarioActual.obraSocial }}</p>
           </div>
-
-          <!-- Imagen 2 a la derecha -->
+          <!-- Imagen derecha -->
           <div class="col-md-3 text-center">
             <img
               *ngIf="usuarioActual.imagenPerfil2"
               [src]="usuarioActual.imagenPerfil2"
-              alt="Foto adicional"
+              alt="Foto adicional del paciente"
               class="img-thumbnail border border-3 border-primary shadow-sm"
               style="max-width: 100%; height: auto; object-fit: cover"
+              loading="lazy"
             />
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Especialista -->
-      <div *ngIf="!isPaciente(usuarioActual)" class="mt-5">
+      <!-- Datos del Especialista o Administrador -->
+      <section
+        *ngIf="!isPaciente(usuarioActual)"
+        class="mt-5"
+        aria-label="Datos del Especialista o Administrador"
+      >
         <h5
           class="mb-4 border-bottom pb-2"
           *ngIf="isEspecialista(usuarioActual)"
@@ -57,17 +65,15 @@
           Datos del Administrador
         </h5>
         <div class="row align-items-center">
-          <!-- Imagen a la izquierda -->
           <div class="col-md-4 text-center mb-3 mb-md-0">
             <img
               [src]="usuarioActual.imagenPerfil"
-              alt="Imagen de perfil especialista"
+              alt="Imagen de perfil del especialista o administrador"
               class="img-thumbnail border border-3 border-primary shadow"
               style="max-width: 100%; height: auto; object-fit: cover"
+              loading="lazy"
             />
           </div>
-
-          <!-- Datos a la derecha -->
           <div class="col-md-8 fs-6">
             <p><strong>Nombre:</strong> {{ usuarioActual.nombre }}</p>
             <p><strong>Apellido:</strong> {{ usuarioActual.apellido }}</p>
@@ -80,21 +86,22 @@
             </p>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 
-  <!-- FORMULARIO DE HORARIOS -->
+  <!-- FORMULARIO DE HORARIOS (solo especialistas) -->
   <form
+    *ngIf="isEspecialista(usuarioActual)"
     (ngSubmit)="guardarHorarios()"
     class="p-4 mt-5 border rounded shadow-sm bg-light"
-    *ngIf="isEspecialista(usuarioActual)"
     style="max-width: 700px; margin: 2rem auto"
+    aria-label="Formulario de horarios laborales"
   >
-    <div class="mb-4">
-      <label class="form-label fw-bold fs-5 d-block mb-3 text-primary">
+    <fieldset class="mb-4">
+      <legend class="form-label fw-bold fs-5 text-primary mb-3">
         Elegí los días que trabajás:
-      </label>
+      </legend>
       <div *ngFor="let dia of diasSemana" class="form-check form-check-inline">
         <input
           type="checkbox"
@@ -102,6 +109,7 @@
           [id]="dia"
           [checked]="diasSeleccionados.has(dia)"
           (change)="toggleDia(dia)"
+          [checked]="diasSeleccionados.has(dia)"
         />
         <label
           [for]="dia"
@@ -111,52 +119,58 @@
           {{ dia }}
         </label>
       </div>
-    </div>
+    </fieldset>
 
-    <div *ngFor="let dia of getDiasSeleccionados()" class="mb-5">
+    <section *ngFor="let dia of getDiasSeleccionados()" class="mb-5">
       <h5 class="text-secondary border-bottom pb-2 mb-4">{{ dia }}</h5>
 
       <div
         *ngFor="let esp of especialista?.especialidad"
         class="mb-4 p-3 rounded bg-white shadow-sm border"
       >
-        <label class="form-label fw-semibold fs-6 text-dark d-block mb-3">
-          {{ esp }}
-        </label>
+        <label class="form-label fw-semibold fs-6 text-dark d-block mb-3">{{
+          esp
+        }}</label>
         <div class="row gx-3 align-items-center">
           <div class="col-md-5">
-            <label for="{{ dia + '-' + esp + '-inicio' }}" class="form-label">
-              Desde
-            </label>
+            <label [for]="dia + '-' + esp + '-inicio'" class="form-label"
+              >Desde</label
+            >
             <input
               type="time"
               class="form-control form-control-sm"
               [(ngModel)]="horarios[dia][esp].horaInicio"
               [name]="dia + '-' + esp + '-inicio'"
-              id="{{ dia + '-' + esp + '-inicio' }}"
+              [id]="dia + '-' + esp + '-inicio'"
               (change)="validarHorarios()"
               required
+              aria-required="true"
             />
           </div>
           <div class="col-md-5">
-            <label for="{{ dia + '-' + esp + '-fin' }}" class="form-label">
-              Hasta
-            </label>
+            <label [for]="dia + '-' + esp + '-fin'" class="form-label"
+              >Hasta</label
+            >
             <input
               type="time"
               class="form-control form-control-sm"
               [(ngModel)]="horarios[dia][esp].horaFinal"
               [name]="dia + '-' + esp + '-fin'"
-              id="{{ dia + '-' + esp + '-fin' }}"
+              [id]="dia + '-' + esp + '-fin'"
               (change)="validarHorarios()"
               required
+              aria-required="true"
             />
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div *ngIf="errorValidacion" class="alert alert-danger fw-semibold">
+    <div
+      *ngIf="errorValidacion"
+      class="alert alert-danger fw-semibold"
+      role="alert"
+    >
       {{ errorValidacion }}
     </div>
 
@@ -169,100 +183,154 @@
     </button>
   </form>
 </div>
-<div
-  *ngIf="historiasClinicas.length > 0 && isPaciente(usuarioActual)"
-  class="container mt-5 mb-5"
->
-  <div class="card shadow-sm border-0 p-4">
-    <h5 class="mb-4 text-primary border-bottom pb-2">Historia Clínica</h5>
 
-    <div class="table-responsive">
-      <table class="table table-hover align-middle text-center">
-        <thead class="table-light text-center">
-          <tr>
-            <th>Fecha</th>
-            <th>Altura</th>
-            <th>Peso</th>
-            <th>Temperatura</th>
-            <th>Presión</th>
-            <th>Especialista</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let historia of historiasClinicas">
-            <td>{{ historia.fecha | date : "dd/MM/yyyy" }}</td>
-            <td>{{ historia.altura }} cm</td>
-            <td>{{ historia.peso }} kg</td>
-            <td>{{ historia.temperatura }} °C</td>
-            <td>{{ historia.presion }}</td>
-            <td>
-              {{ historia.especialista?.nombre }}
-              {{ historia.especialista?.apellido }}
-            </td>
-            <td class="text-center">
-              <button
-                class="btn btn-sm btn-outline-primary px-3 py-1"
-                (click)="verDetalles(historia)"
-              >
-                Ver más
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+<!-- Descargas para Paciente -->
+<div class="container mt-5 mb-5" *ngIf="isPaciente(usuarioActual)">
+  <div class="d-flex flex-column flex-md-row align-items-center gap-3 mb-3">
+    <button
+      class="btn btn-outline-danger"
+      (click)="descargarHistoriaClinicaPDF()"
+      aria-label="Descargar historia clínica en PDF"
+    >
+      <i class="bi bi-file-earmark-pdf"></i> Descargar Historia Clínica
+    </button>
+
+    <select
+      [(ngModel)]="especialistaSeleccionadoId"
+      class="form-select w-auto"
+      aria-label="Seleccionar profesional para descargar atenciones"
+    >
+      <option [ngValue]="null" disabled selected>
+        Seleccioná un profesional
+      </option>
+      <option *ngFor="let esp of especialistas" [ngValue]="esp.id">
+        {{ esp.nombre }} {{ esp.apellido }}
+      </option>
+    </select>
+
+    <button
+      class="btn btn-outline-primary"
+      [disabled]="!especialistaSeleccionadoId"
+      (click)="descargarAtencionesPorEspecialista()"
+      aria-label="Descargar atenciones según profesional seleccionado"
+    >
+      <i class="bi bi-download"></i> Descargar Atenciones
+    </button>
+  </div>
+
+  <section
+    *ngIf="historiasClinicas.length > 0 && isPaciente(usuarioActual)"
+    class="container mt-5 mb-5"
+    aria-label="Tabla de historia clínica"
+  >
+    <div class="card shadow-sm border-0 p-4">
+      <h5 class="mb-4 text-primary border-bottom pb-2">Historia Clínica</h5>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle text-center">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">Fecha</th>
+              <th scope="col">Altura</th>
+              <th scope="col">Peso</th>
+              <th scope="col">Temperatura</th>
+              <th scope="col">Presión</th>
+              <th scope="col">Especialista</th>
+              <th scope="col">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let historia of historiasClinicas">
+              <td>{{ historia.fecha | date : "dd/MM/yyyy" }}</td>
+              <td>{{ historia.altura }} cm</td>
+              <td>{{ historia.peso }} kg</td>
+              <td>{{ historia.temperatura }} °C</td>
+              <td>{{ historia.presion }}</td>
+              <td>
+                {{ historia.especialista?.nombre }}
+                {{ historia.especialista?.apellido }}
+              </td>
+              <td class="text-center">
+                <button
+                  class="btn btn-sm btn-outline-primary px-3 py-1"
+                  (click)="verDetalles(historia)"
+                  aria-label="Ver detalles de historia clínica"
+                >
+                  Ver más
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div
+    class="container"
+    *ngIf="historiasClinicas.length == 0 && isPaciente(usuarioActual)"
+  >
+    <div class="alert alert-info text-center" role="alert">
+      No tenés historias clínicas registradas.
     </div>
   </div>
-</div>
-<div
-  class="modal fade show d-block"
-  tabindex="-1"
-  style="background-color: rgba(0, 0, 0, 0.5)"
-  *ngIf="historiaSeleccionada"
->
-  <div class="modal-dialog modal-lg modal-dialog-centered">
-    <div class="modal-content border-primary">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title">Detalle de Historia Clínica</h5>
-        <button
-          type="button"
-          class="btn-close"
-          (click)="cerrarDetalles()"
-          aria-label="Cerrar"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <p>
-          <strong>Fecha:</strong>
-          {{ historiaSeleccionada.fecha | date : "dd/MM/yyyy HH:mm" }}
-        </p>
-        <p><strong>Altura:</strong> {{ historiaSeleccionada.altura }} cm</p>
-        <p><strong>Peso:</strong> {{ historiaSeleccionada.peso }} kg</p>
-        <p>
-          <strong>Temperatura:</strong>
-          {{ historiaSeleccionada.temperatura }} °C
-        </p>
-        <p><strong>Presión:</strong> {{ historiaSeleccionada.presion }}</p>
 
-        <div *ngIf="historiaSeleccionada.dinamicos?.length">
-          <p><strong>Datos adicionales:</strong></p>
-          <ul>
-            <li *ngFor="let campo of historiaSeleccionada.dinamicos">
-              <strong>{{ campo.clave }}:</strong> {{ campo.valor }}
-            </li>
-          </ul>
+  <!-- Modal detalles historia clínica -->
+  <div
+    class="modal fade show d-block"
+    tabindex="-1"
+    style="background-color: rgba(0, 0, 0, 0.5)"
+    *ngIf="historiaSeleccionada"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTitle"
+  >
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content border-primary">
+        <div class="modal-header bg-primary text-white">
+          <h5 id="modalTitle" class="modal-title">
+            Detalle de Historia Clínica
+          </h5>
+          <button
+            type="button"
+            class="btn-close"
+            (click)="cerrarDetalles()"
+            aria-label="Cerrar"
+          ></button>
         </div>
+        <div class="modal-body">
+          <p>
+            <strong>Fecha:</strong>
+            {{ historiaSeleccionada.fecha | date : "dd/MM/yyyy HH:mm" }}
+          </p>
+          <p><strong>Altura:</strong> {{ historiaSeleccionada.altura }} cm</p>
+          <p><strong>Peso:</strong> {{ historiaSeleccionada.peso }} kg</p>
+          <p>
+            <strong>Temperatura:</strong>
+            {{ historiaSeleccionada.temperatura }} °C
+          </p>
+          <p><strong>Presión:</strong> {{ historiaSeleccionada.presion }}</p>
 
-        <p *ngIf="historiaSeleccionada.especialista">
-          <strong>Especialista:</strong>
-          {{ historiaSeleccionada.especialista.nombre }}
-          {{ historiaSeleccionada.especialista.apellido }}
-        </p>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" (click)="cerrarDetalles()">
-          Cerrar
-        </button>
+          <div *ngIf="historiaSeleccionada.dinamicos?.length">
+            <p><strong>Datos adicionales:</strong></p>
+            <ul>
+              <li *ngFor="let campo of historiaSeleccionada.dinamicos">
+                <strong>{{ campo.clave }}:</strong> {{ campo.valor }}
+              </li>
+            </ul>
+          </div>
+
+          <p *ngIf="historiaSeleccionada.especialista">
+            <strong>Especialista:</strong>
+            {{ historiaSeleccionada.especialista.nombre }}
+            {{ historiaSeleccionada.especialista.apellido }}
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="cerrarDetalles()">
+            Cerrar
+          </button>
+        </div>
       </div>
     </div>
   </div>

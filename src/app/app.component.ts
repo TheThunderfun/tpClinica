@@ -20,6 +20,7 @@ import {
   imports: [RouterOutlet, NavBarComponent, RouterLink, RouterLinkActive],
   animations: [
     trigger('routeAnimations', [
+      // Slide desde derecha a izquierda
       transition('* => SlideIn', [
         style({ transform: 'translateX(100%)', opacity: 0 }),
         animate(
@@ -27,9 +28,26 @@ import {
           style({ transform: 'translateX(0)', opacity: 1 })
         ),
       ]),
+
+      // Fade in
       transition('* => FadeIn', [
         style({ opacity: 0 }),
         animate('400ms ease-in-out', style({ opacity: 1 })),
+      ]),
+
+      // Slide desde izquierda a derecha
+      transition('* => SlideOut', [
+        style({ transform: 'translateX(-100%)', opacity: 0 }),
+        animate(
+          '400ms ease-out',
+          style({ transform: 'translateX(0)', opacity: 1 })
+        ),
+      ]),
+
+      // Zoom In
+      transition('* => ZoomIn', [
+        style({ transform: 'scale(0.5)', opacity: 0 }),
+        animate('400ms ease-out', style({ transform: 'scale(1)', opacity: 1 })),
       ]),
     ]),
   ],

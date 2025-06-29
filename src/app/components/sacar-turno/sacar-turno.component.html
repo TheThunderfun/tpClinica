@@ -94,6 +94,14 @@
           </button>
         </div>
       </div>
+      <div
+        class="container"
+        *ngIf="horariosDisponibles.length == 0 && formulario.value.dia"
+      >
+        <div class="alert alert-warning text-center" role="alert">
+          No hay horarios disponibles para la fecha seleccionada.
+        </div>
+      </div>
 
       <!-- Seleccionar Paciente (solo admin) -->
       <div class="mb-3" *ngIf="esAdmin">

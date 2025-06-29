@@ -685,7 +685,7 @@ export class UsuariosService {
       conteo[medico] = (conteo[medico] || 0) + 1;
     }
     console.log('Conteo de turnos por médico:', conteo);
-    return conteo; 
+    return conteo;
   }
   //turnos finalizados por medico en x rango de fechas
   async turnosFinalizadosPorMedicoEnRango(
@@ -706,8 +706,8 @@ export class UsuariosService {
     `
       )
       .eq('estado', 'finalizado')
-    .gte('fecha_turno', fechaInicio)
-    .lte('fecha_turno', fechaFin);
+      .gte('fecha_turno', fechaInicio)
+      .lte('fecha_turno', fechaFin);
 
     if (error) throw new Error('Error al obtener turnos: ' + error.message);
 
@@ -725,5 +725,103 @@ export class UsuariosService {
     }
     console.log('Conteo de turnos finalizados por médico:', conteo);
     return conteo; // Ej: { 'Juan Pérez': 3 }
+  }
+
+  async obtenerPacientesAtendidosPorEspecialista(especialistaId: string) {
+    const { data, error } = await this.supabase.client
+      .from('turnos')
+      .select('paciente:paciente_id (id, nombre, apellido, imagenPerfil)')
+      .eq('especialista_id', especialistaId)
+      .eq('estado', 'finalizado'); // o los estados que consideres válidos
+
+    if (error) throw error;
+
+    // Evita repetidos por ID
+    const pacientesUnicos = Object.values(
+      data.reduce((acc: { [id: string]: any }, turno: any) => {
+        if (turno.paciente?.id && !acc[turno.paciente.id]) {
+          acc[turno.paciente.id] = turno.paciente;
+        }
+        return acc;
+      }, {})
+    );
+    return pacientesUnicos;
+  }
+
+  async obtenerTurnosDePacienteConEspecialista(
+    pacienteId: string | null | undefined,
+    especialistaId: string
+  ) {
+    if (!pacienteId) {
+      // Manejar el caso cuando pacienteId no está definido
+      return [];
+    }
+
+    const { data, error } = await this.supabase.client
+      .from('turnos')
+      .select('*,paciente:paciente_id(id,nombre,apellido,imagenPerfil)')
+      .eq('paciente_id', pacienteId)
+      .eq('especialista_id', especialistaId)
+      .eq('estado', 'finalizado');
+
+    if (error) {
+      console.error(error);
+      return [];
+    }
+    return data || [];
+  }
+
+  async obtenerHistoriasClinicasDePacienteConEspecialista(
+    pacienteId: string,
+    especialistaId: string
+  ) {
+    const { data, error } = await this.supabase.client
+      .from('historias_clinicas')
+      .select(
+        `
+      *,
+      paciente:paciente_id (id, nombre, apellido, imagenPerfil)
+    `
+      )
+      .eq('paciente_id', pacienteId)
+      .eq('especialista_id', especialistaId)
+      .order('fecha', { ascending: false });
+
+    if (error) {
+      console.error('Error al obtener historias clínicas:', error.message);
+      return [];
+    }
+
+    return data || [];
+  }
+
+  async obtenerTurnosPorPaciente(pacienteId: string): Promise<any[]> {
+    if (!pacienteId) {
+      return [];
+    }
+
+    const { data, error } = await this.supabase.client
+      .from('turnos')
+      .select(
+        'fecha_turno, hora_turno, especialidad, estado, diagnostico, comentario_cancelacion, especialista:especialista_id(id,nombre,apellido,imagenPerfil)'
+      )
+      .eq('paciente_id', pacienteId);
+
+    if (error) {
+      console.error('Error al obtener turnos del paciente:', error.message);
+      return [];
+    }
+
+    return data || [];
+  }
+
+  async obtenerEspecialistas() {
+    const { data, error } = await this.supabase.client
+      .from('usuarios')
+      .select('*')
+      .eq('rol', 'especialista');
+
+    if (error) throw error;
+    return data;
   }
 }

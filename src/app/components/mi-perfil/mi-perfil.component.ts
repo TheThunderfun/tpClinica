@@ -12,6 +12,8 @@ import { ToastrService } from 'ngx-toastr';
 import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 import { Admin } from '../../class/admin';
 dayjs.extend(isSameOrBefore);
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export interface HorarioPorDia {
   dia: string; // 'Lunes', 'Martes', etc.
@@ -30,6 +32,8 @@ export interface HorarioPorDia {
 export class MiPerfilComponent {
   usuarioActual: Usuario | null = null;
   diasSemana: string[] = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  especialistas: any[] = [];
+  especialistaSeleccionadoId: string | null = null;
 
   horarios: {
     [dia: string]: {
@@ -40,8 +44,9 @@ export class MiPerfilComponent {
   diasSeleccionados: Set<string> = new Set();
   horarioLaboral = { horaInicio: '', horaFinal: '' };
   errorValidacion: string = '';
-  historiasClinicas: any[] = []; // Cambia el tipo según tu modelo de historia clínica
+  historiasClinicas: any[] = [];
   historiaSeleccionada: any = null;
+  turnosPaciente: any[] = [];
   constructor(
     private authService: AuthService,
     private usuariosService: UsuariosService,
@@ -60,7 +65,6 @@ export class MiPerfilComponent {
         this.usuarioActual = usuario;
       }
 
-      // Si es paciente, cargar historia clínica
       if (
         this.usuarioActual &&
         this.isPaciente(this.usuarioActual) &&
@@ -74,6 +78,14 @@ export class MiPerfilComponent {
 
       if (this.isEspecialista(this.usuarioActual)) {
         this.inicializarHorarios();
+      }
+      if (this.isPaciente(this.usuarioActual)) {
+        if (!this.usuarioActual.id) return;
+        this.especialistas = await this.usuariosService.obtenerEspecialistas();
+        this.turnosPaciente =
+          await this.usuariosService.obtenerTurnosPorPaciente(
+            this.usuarioActual.id
+          );
       }
     });
   }
@@ -292,5 +304,117 @@ export class MiPerfilComponent {
   cerrarDetalles() {
     this.historiaSeleccionada = null;
   }
-  
+
+  async descargarHistoriaClinicaPDF() {
+    if (!this.usuarioActual || !this.isPaciente(this.usuarioActual)) return;
+
+    const logoBase64 = await this.convertirImagenABase64(
+      'assets/images/favicon.ico'
+    );
+    const doc = new jsPDF();
+
+    doc.addImage(logoBase64, 'PNG', 10, 10, 30, 30);
+    doc.setFontSize(18);
+    doc.text('Informe de Historia Clínica', 50, 20);
+    doc.setFontSize(12);
+    doc.text(
+      `Paciente: ${this.usuarioActual.nombre} ${this.usuarioActual.apellido}`,
+      50,
+      30
+    );
+    doc.text(`Fecha de emisión: ${dayjs().format('DD/MM/YYYY')}`, 50, 37);
+
+    const body = this.historiasClinicas.map((h) => [
+      dayjs(h.fecha).format('DD/MM/YYYY'),
+      `${h.altura} cm`,
+      `${h.peso} kg`,
+      `${h.temperatura} °C`,
+      h.presion,
+      `${h.especialista?.nombre ?? ''} ${h.especialista?.apellido ?? ''}`,
+    ]);
+
+    autoTable(doc, {
+      startY: 50,
+      head: [
+        ['Fecha', 'Altura', 'Peso', 'Temperatura', 'Presión', 'Especialista'],
+      ],
+      body,
+    });
+
+    doc.save(`historia_clinica_${this.usuarioActual.apellido}.pdf`);
+  }
+  async descargarAtencionesPorEspecialista() {
+    if (!this.usuarioActual || !this.especialistaSeleccionadoId) return;
+
+    const filtradas = this.turnosPaciente.filter(
+      (h) => h.especialista?.id === this.especialistaSeleccionadoId
+    );
+
+    if (filtradas.length === 0) {
+      this.toastr.info('No hay atenciones para este profesional.');
+      return;
+    }
+
+    const logoBase64 = await this.convertirImagenABase64(
+      'assets/images/favicon.ico'
+    );
+
+    const doc = new jsPDF();
+
+    // 🖼️ Logo
+    doc.addImage(logoBase64, 'PNG', 10, 10, 20, 20);
+
+    // 🧾 Título
+    doc.setFontSize(16);
+    doc.text('Informe de Historia Clínica', 105, 15, { align: 'center' });
+
+    // 👤 Datos del paciente
+    doc.setFontSize(11);
+    doc.text(
+      `Paciente: ${this.usuarioActual.nombre} ${this.usuarioActual.apellido}`,
+      105,
+      22,
+      { align: 'center' }
+    );
+    doc.text(`Fecha de emisión: ${dayjs().format('DD/MM/YYYY')}`, 105, 28, {
+      align: 'center',
+    });
+
+    // 📋 Subtítulo de sección
+    doc.setFontSize(12);
+    doc.text('Atenciones según Profesional', 14, 40);
+
+    // 📊 Tabla
+    const body = filtradas.map((h) => [
+      dayjs(h.fecha_turno).format('DD/MM/YYYY'),
+      h.estado,
+      h.diagnostico || '-',
+      h.calificacion?.toString() ?? '-',
+    ]);
+
+    autoTable(doc, {
+      startY: 45, // más abajo para no tapar nada
+      head: [['Fecha', 'Estado', 'Diagnóstico', 'Calificación']],
+      body,
+    });
+
+    doc.save('atenciones_por_profesional.pdf');
+  }
+
+  convertirImagenABase64(url: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = reject;
+      img.src = url;
+    });
+  }
 }

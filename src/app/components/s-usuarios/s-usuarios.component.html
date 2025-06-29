@@ -1,5 +1,7 @@
 <div class="container my-5">
-  <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+  <div
+    class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2"
+  >
     <button
       class="btn btn-success d-flex align-items-center gap-1 shadow-sm"
       data-bs-toggle="modal"
@@ -16,53 +18,29 @@
     </button>
   </div>
 
-  <h2
-    class="mb-4 text-primary fw-bold"
-    style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
-  >
-    Sección Usuarios
-  </h2>
-
-  <div class="table-responsive shadow-sm rounded" style="border: 1px solid #d1d7dc;">
-    <table class="table table-hover align-middle mb-0 bg-white rounded">
-      <thead
-        class="bg-primary text-white"
-        style="border-radius: 0.5rem 0.5rem 0 0;"
+  <div class="container my-4">
+    <h2 class="mb-4 text-primary fw-bold">Usuarios</h2>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+      <div
+        class="col"
+        *ngFor="let usuario of usuarios"
+        style="cursor: pointer"
+        [title]="
+          'Descargar turnos de ' + usuario.nombre + ' ' + usuario.apellido
+        "
       >
-        <tr>
-          <th class="text-center" style="font-weight: 600;">Nombre</th>
-          <th class="text-center" style="font-weight: 600;">Apellido</th>
-          <th class="text-center" style="font-weight: 600; max-width: 220px;">
-            Email
-          </th>
-          <th class="text-center" style="font-weight: 600;">Rol</th>
-          <th class="text-center" style="font-weight: 600;">Autorizado</th>
-          <th class="text-center" style="font-weight: 600;">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          *ngFor="let usuario of usuarios"
-          [class.bg-light]="usuario.rol === 'paciente'"
-          style="cursor: default;"
-        >
-          <td class="text-center fw-medium text-dark">{{ usuario.nombre }}</td>
-          <td class="text-center fw-medium text-dark">{{ usuario.apellido }}</td>
-          <td
-            class="text-center text-truncate"
-            style="max-width: 220px; font-family: 'Roboto Mono', monospace; color: #555;"
-            [attr.title]="usuario.email"
-          >
-            {{ usuario.email }}
-          </td>
-          <td class="text-center">{{ usuario.rol | rolVisual }}</td>
-          <td class="text-center">
-            <ng-container *ngIf="usuario.rol === 'especialista'; else noAplica">
-              <span [innerHTML]="usuario.autorizado | autorizacionVisual"></span>
-            </ng-container>
-            <ng-template #noAplica>--</ng-template>
-          </td>
-          <td class="text-center">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body text-center">
+            <h5 class="card-title">
+              {{ usuario.nombre }} {{ usuario.apellido }}
+            </h5>
+            <p class="card-text text-muted">{{ usuario.email }}</p>
+            <p class="card-text">
+              <small class="text-secondary"
+                >Rol: {{ usuario.rol | rolVisual }}</small
+              >
+            </p>
+
             <button
               *ngIf="usuario.rol === 'especialista'"
               (click)="cambiarAutorizacion(usuario)"
@@ -71,22 +49,30 @@
                 'btn btn-outline-danger btn-sm': usuario.autorizado
               }"
               title="{{ usuario.autorizado ? 'Deshabilitar' : 'Habilitar' }}"
-              style="min-width: 110px; font-weight: 600;"
-            >
+              style="min-width: 110px; font-weight: 600"
+            >Autorizado
               <i
                 class="bi"
                 [ngClass]="{
                   'bi-toggle-on': usuario.autorizado,
                   'bi-toggle-off': !usuario.autorizado
                 }"
-                style="font-size: 1.25rem; margin-right: 6px;"
+                style="font-size: 1.25rem; margin-right: 6px"
               ></i>
               {{ usuario.autorizado | autorizacionTexto }}
             </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+          </div>
+          <button
+            class="btn btn-sm btn-outline-primary mt-2"
+            (click)="
+              descargarTurnosDePaciente(usuario); $event.stopPropagation()
+            "
+          >
+            <i class="bi bi-download me-1"></i> Descargar turnos
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Modal Registrar Administrador -->
@@ -121,7 +107,8 @@
                   formControlName="nombre"
                   class="form-control"
                   [class.is-invalid]="
-                    formAdmin.get('nombre')?.touched && formAdmin.get('nombre')?.invalid
+                    formAdmin.get('nombre')?.touched &&
+                    formAdmin.get('nombre')?.invalid
                   "
                 />
                 <div class="invalid-feedback">
@@ -138,7 +125,8 @@
                   formControlName="apellido"
                   class="form-control"
                   [class.is-invalid]="
-                    formAdmin.get('apellido')?.touched && formAdmin.get('apellido')?.invalid
+                    formAdmin.get('apellido')?.touched &&
+                    formAdmin.get('apellido')?.invalid
                   "
                 />
                 <div class="invalid-feedback">
@@ -156,7 +144,8 @@
                   formControlName="edad"
                   class="form-control"
                   [class.is-invalid]="
-                    formAdmin.get('edad')?.touched && formAdmin.get('edad')?.invalid
+                    formAdmin.get('edad')?.touched &&
+                    formAdmin.get('edad')?.invalid
                   "
                 />
                 <div class="invalid-feedback">
@@ -180,7 +169,8 @@
                   formControlName="dni"
                   class="form-control"
                   [class.is-invalid]="
-                    formAdmin.get('dni')?.touched && formAdmin.get('dni')?.invalid
+                    formAdmin.get('dni')?.touched &&
+                    formAdmin.get('dni')?.invalid
                   "
                 />
                 <div class="invalid-feedback">
@@ -204,7 +194,8 @@
                   formControlName="email"
                   class="form-control"
                   [class.is-invalid]="
-                    formAdmin.get('email')?.touched && formAdmin.get('email')?.invalid
+                    formAdmin.get('email')?.touched &&
+                    formAdmin.get('email')?.invalid
                   "
                 />
                 <div class="invalid-feedback">
@@ -271,7 +262,9 @@
 <!-- Historias Clínicas -->
 <div *ngIf="historiasClinicas.length > 0" class="container mt-5 mb-5">
   <div class="card shadow-sm border-0 p-4 rounded-4">
-    <h5 class="mb-4 text-primary border-bottom pb-2 fw-semibold">Historias Clínicas</h5>
+    <h5 class="mb-4 text-primary border-bottom pb-2 fw-semibold">
+      Historias Clínicas
+    </h5>
 
     <div class="table-responsive">
       <table class="table table-hover align-middle text-center rounded-3">
@@ -287,7 +280,10 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let historia of historiasClinicas" style="cursor: pointer;">
+          <tr
+            *ngFor="let historia of historiasClinicas"
+            style="cursor: pointer"
+          >
             <td>{{ historia.fecha | date : "dd/MM/yyyy" }}</td>
             <td>{{ historia.altura }} cm</td>
             <td>{{ historia.peso }} kg</td>
@@ -331,11 +327,15 @@
       </div>
       <div class="modal-body">
         <p>
-          <strong>Fecha:</strong> {{ historiaSeleccionada.fecha | date : "dd/MM/yyyy HH:mm" }}
+          <strong>Fecha:</strong>
+          {{ historiaSeleccionada.fecha | date : "dd/MM/yyyy HH:mm" }}
         </p>
         <p><strong>Altura:</strong> {{ historiaSeleccionada.altura }} cm</p>
         <p><strong>Peso:</strong> {{ historiaSeleccionada.peso }} kg</p>
-        <p><strong>Temperatura:</strong> {{ historiaSeleccionada.temperatura }} °C</p>
+        <p>
+          <strong>Temperatura:</strong>
+          {{ historiaSeleccionada.temperatura }} °C
+        </p>
         <p><strong>Presión:</strong> {{ historiaSeleccionada.presion }}</p>
 
         <div *ngIf="historiaSeleccionada.dinamicos?.length">
@@ -352,12 +352,16 @@
           {{ historiaSeleccionada.paciente.apellido }}
         </p>
         <p *ngIf="historiaSeleccionada.especialista">
-          <strong>Especialista:</strong> {{ historiaSeleccionada.especialista.nombre }}
+          <strong>Especialista:</strong>
+          {{ historiaSeleccionada.especialista.nombre }}
           {{ historiaSeleccionada.especialista.apellido }}
         </p>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary px-4 py-2 fw-semibold" (click)="cerrarDetalles()">
+        <button
+          class="btn btn-secondary px-4 py-2 fw-semibold"
+          (click)="cerrarDetalles()"
+        >
           Cerrar
         </button>
       </div>

@@ -1,4 +1,68 @@
-<div *ngIf="historiasClinicas.length > 0" class="container mt-5 mb-5">
+<div class="container">
+  <div *ngIf="pacientes.length > 0" class="mb-4">
+    <h5 class="mb-3 text-primary">Pacientes Atendidos</h5>
+    <div class="d-flex flex-wrap gap-3">
+      <div
+        *ngFor="let paciente of pacientes"
+        class="d-flex flex-column align-items-center"
+      >
+        <img
+          [src]="paciente.imagenPerfil"
+          class="rounded-circle mb-2"
+          width="100"
+          height="100"
+          alt="Paciente"
+        />
+        <button
+          class="btn btn-outline-danger rounded-circle"
+          (click)="seleccionarPaciente(paciente)"
+          title="Ver detalles"
+        >
+          <i class="bi bi-heart-fill"></i>
+        </button>
+        <span class="mt-1 text-center">
+          {{ paciente.nombre }}<br />{{ paciente.apellido }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div
+    *ngIf="pacienteSeleccionado && turnosDelPaciente.length > 0"
+    class="mt-5"
+  >
+    <h5 class="mb-3 text-primary border-bottom pb-2">
+      Turnos con {{ pacienteSeleccionado.nombre }}
+    </h5>
+    <ul class="list-group">
+      <li *ngFor="let turno of turnosDelPaciente" class="list-group-item">
+        <div class="d-flex justify-content-between align-items-center">
+          <span>
+            <strong>Fecha:</strong>
+            {{ turno.fecha_turno | date : "dd/MM/yyyy" }}
+            <strong>Hora:</strong>
+            {{ turno.hora_turno }}
+            <span *ngIf="turno.estado">
+              — <strong>Estado:</strong> {{ turno.estado }}
+            </span>
+          </span>
+          <button
+            *ngIf="turno['reseña']"
+            class="btn btn-sm btn-outline-info"
+            (click)="verResena(turno['reseña'])"
+          >
+            Ver Reseña
+          </button>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<div
+  *ngIf="pacienteSeleccionado && historiasClinicas.length > 0"
+  class="container mt-5 mb-5"
+>
   <div class="card shadow-sm border-0 p-4">
     <h5 class="mb-4 text-primary border-bottom pb-2">Historias Clínicas</h5>
 
@@ -40,6 +104,7 @@
     </div>
   </div>
 </div>
+
 <div
   class="modal fade show d-block"
   tabindex="-1"

@@ -20,6 +20,7 @@ export const routes: Routes = [
   {
     path: 'registro',
     component: RegistroComponent,
+    data: { animation: 'SlideOut' },
   },
   {
     path: 'bienvenida',
@@ -37,10 +38,14 @@ export const routes: Routes = [
     path: 'turnos',
     loadChildren: () =>
       import('./modules/turnos/turnos.module').then((m) => m.TurnosModule),
+    data: { animation: 'SlideIn' },
   },
   {
     path: 'miPerfil',
     component: MiPerfilComponent,
+    data: {
+      animation: 'ZoomIn',
+    },
   },
   {
     path: 'estadisticas',

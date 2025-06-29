@@ -221,4 +221,56 @@ export class SUsuariosComponent implements OnInit {
   toggleTabla() {
     this.mostrarTabla = !this.mostrarTabla;
   }
+  async descargarTurnosDePaciente(usuario: any) {
+    try {
+      // 1. Consultar turnos del paciente, llamar a tu servicio usuariosService
+      const turnos = await this.usuariosService.obtenerTurnosPorPaciente(
+        usuario.id
+      );
+
+      if (!turnos || turnos.length === 0) {
+        this.toastr.info(
+          'Este paciente no tiene turnos registrados.',
+          'Información'
+        );
+        return;
+      }
+
+      // 2. Preparar datos para Excel
+      const datosExcel = turnos.map((turno: any) => ({
+        Fecha: new Date(turno.fecha_turno).toLocaleDateString(),
+        Hora: turno.hora_turno,
+        Especialidad: turno.especialidad,
+        Estado: turno.estado,
+        Especialista: turno.especialista
+          ? `${turno.especialista.nombre} ${turno.especialista.apellido}`
+          : '',
+        Diagnóstico: turno.diagnostico || '',
+        Comentario: turno.comentario_cancelacion || '',
+      }));
+
+      // 3. Crear hoja y libro Excel
+      const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+      const workbook = {
+        Sheets: { Turnos: worksheet },
+        SheetNames: ['Turnos'],
+      };
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: 'xlsx',
+        type: 'array',
+      });
+
+      // 4. Guardar archivo
+      const blob = new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8',
+      });
+
+      FileSaver.saveAs(
+        blob,
+        `Turnos_${usuario.nombre}_${usuario.apellido}.xlsx`
+      );
+    } catch (error: any) {
+      this.toastr.error('Error al descargar turnos: ' + error.message, 'Error');
+    }
+  }
 }
