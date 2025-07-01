@@ -36,29 +36,33 @@
             </h5>
             <p class="card-text text-muted">{{ usuario.email }}</p>
             <p class="card-text">
-              <small class="text-secondary"
-                >Rol: {{ usuario.rol | rolVisual }}</small
-              >
+              <strong>
+                <small class="text-secondary"
+                  >Rol: {{ usuario.rol | rolVisual }}</small
+                >
+              </strong>
             </p>
 
             <button
               *ngIf="usuario.rol === 'especialista'"
+              class="btn btn-sm"
+              [ngClass]="
+                usuario.autorizado
+                  ? 'btn-outline-success'
+                  : 'btn-outline-danger'
+              "
               (click)="cambiarAutorizacion(usuario)"
-              [ngClass]="{
-                'btn btn-outline-success btn-sm': !usuario.autorizado,
-                'btn btn-outline-danger btn-sm': usuario.autorizado
-              }"
-              title="{{ usuario.autorizado ? 'Deshabilitar' : 'Habilitar' }}"
-              style="min-width: 110px; font-weight: 600"
-            >Autorizado
+              [title]="usuario.autorizado ? 'Deshabilitar' : 'Habilitar'"
+              style="min-width: 120px; font-weight: 600"
+            >
               <i
-                class="bi"
-                [ngClass]="{
-                  'bi-toggle-on': usuario.autorizado,
-                  'bi-toggle-off': !usuario.autorizado
-                }"
-                style="font-size: 1.25rem; margin-right: 6px"
+                class="bi me-1"
+                [ngClass]="
+                  usuario.autorizado ? 'bi-toggle-on' : 'bi-toggle-off'
+                "
+                style="font-size: 1.25rem"
               ></i>
+              Autorizado
               {{ usuario.autorizado | autorizacionTexto }}
             </button>
           </div>
@@ -342,7 +346,8 @@
           <p><strong>Datos adicionales:</strong></p>
           <ul>
             <li *ngFor="let campo of historiaSeleccionada.dinamicos">
-              <strong>{{ campo.clave }}:</strong> {{ campo.valor }}
+              <strong>{{ campo.clave | formatear }}:</strong>
+              {{ campo.valor | formatear }}
             </li>
           </ul>
         </div>
@@ -353,8 +358,8 @@
         </p>
         <p *ngIf="historiaSeleccionada.especialista">
           <strong>Especialista:</strong>
-          {{ historiaSeleccionada.especialista.nombre }}
-          {{ historiaSeleccionada.especialista.apellido }}
+          {{ historiaSeleccionada.especialista.nombre | formatear }}
+          {{ historiaSeleccionada.especialista.apellido | formatear }}
         </p>
       </div>
       <div class="modal-footer">

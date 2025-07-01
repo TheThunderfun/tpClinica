@@ -13,7 +13,7 @@ import {
 import { SupabaseService } from '../../services/supabase.service';
 import { AutorizacionTextoPipe } from '../../pipes/autorizacion-texto.pipe';
 import { RolVisualPipe } from '../../pipes/rol-visual.pipe';
-import { AutorizacionVisualPipe } from '../../pipes/autorizacion-visual.pipe';
+import { FormatearPipe } from '../../pipes/formatear.pipe';
 import { NavBarComponent } from '../nav-bar/nav-bar.component';
 import { UsuariosService } from '../../services/usuarios.service';
 import { Admin } from '../../class/admin';
@@ -29,7 +29,7 @@ import * as FileSaver from 'file-saver';
     FormsModule,
     AutorizacionTextoPipe,
     RolVisualPipe,
-    AutorizacionVisualPipe,
+    FormatearPipe,
     NavBarComponent,
     ReactiveFormsModule,
   ],

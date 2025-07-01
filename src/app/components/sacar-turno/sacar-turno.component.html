@@ -75,6 +75,14 @@
           </button>
         </div>
       </div>
+      <div
+        class="container"
+        *ngIf="diasDisponibles.length == 0 && formulario.value.especialidad"
+      >
+        <div class="alert alert-warning text-center" role="alert">
+          No hay dias disponibles para la especialidad seleccionada.
+        </div>
+      </div>
 
       <!-- Seleccionar Horario -->
       <div class="mb-4" *ngIf="horariosDisponibles.length > 0">
